@@ -1,0 +1,15 @@
+1. Run proto file -
+    protoc --go_out=. --go-grpc_out=. common.proto
+
+
+when proposer sends the prepared message, it waits for the promise from majority of nodes. Check how to
+implement this, proposer only needs to check the ballot number or the accepted val when majority nodes have sent
+the promise
+
+
+if leader is sending a prepare message, it might need to send the previous ballot number (last log that you
+committed) - it becomes easier for other to accept? Can use linked list here? Current node, and the next
+node (new stuff)
+
+This system will work both ways. Leader will update followers, and followers will also update leader.
+
