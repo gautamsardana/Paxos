@@ -11,20 +11,31 @@ import (
 
 const ballotFilePath = "/server_alice/ballot.txt"
 
+var MapServerNumberToAddress = map[int32]string{
+	1: "localhost:8080",
+	2: "localhost:8081",
+	3: "localhost:8082",
+	4: "localhost:8083",
+	5: "localhost:8084",
+}
+
 func GetBallot(conf *config.Config) {
 	dir, _ := os.Getwd()
 	fileContent, err := os.ReadFile(dir + ballotFilePath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	ballotDetails := strings.Split(string(fileContent), ".")
+	conf.CurrBallot.TermNumber, conf.CurrBallot.ServerNumber = GetTermAndServerNumber(string(fileContent))
+}
+
+func GetTermAndServerNumber(ballot string) (int32, int32) {
+	ballotDetails := strings.Split(ballot, ".")
 	currTermNumber, err := strconv.Atoi(ballotDetails[0])
 	currServerNumber, err := strconv.Atoi(ballotDetails[1])
 	if err != nil {
 		log.Fatal(err)
 	}
-	conf.CurrBallot.TermNumber = int32(currTermNumber)
-	conf.CurrBallot.ServerNumber = int32(currServerNumber)
+	return int32(currTermNumber), int32(currServerNumber)
 }
 
 func UpdateBallot(conf *config.Config, updatedTermNumber, updatedServerNumber int32) {

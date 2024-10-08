@@ -9,7 +9,6 @@ import (
 	"os"
 
 	common "GolandProjects/apaxos-gautamsardana/api_common"
-	"GolandProjects/apaxos-gautamsardana/server_alice/storage"
 	"GolandProjects/apaxos-gautamsardana/server_alice/storage/logstore"
 	pool "GolandProjects/apaxos-gautamsardana/server_pool"
 )
@@ -26,8 +25,10 @@ type Config struct {
 	LogStore        *logstore.LogStore
 	ServerAddresses []string `json:"server_addresses"`
 	Pool            *pool.ServerPool
-	CurrBallot      BallotDetails
-	CurrVal         *CurrValDetails
+	CurrBallot      BallotDetails        // for each server maintaining their ballots
+	CurrVal         *CurrValDetails      // for leader getting promise requests
+	AcceptVal       *AcceptValDetails    // for follower getting accept requests
+	AcceptedServers *AcceptedServersInfo // for leader getting accepted requests
 }
 
 type DBCreds struct {
@@ -43,17 +44,35 @@ type BallotDetails struct {
 }
 
 type CurrValDetails struct {
-	ServersRespNumber int
-	BallotNumber      common.Ballot
-	Transactions      []storage.Transaction
+	CurrPromiseCount int
+	ServerAddresses  []string
+	MaxAcceptVal     *common.Ballot
+	BallotNumber     *common.Ballot
+	Transactions     []*common.ProcessTxnRequest
 }
 
 func CurrentValConstructor() *CurrValDetails {
-	return &CurrValDetails{ServersRespNumber: 1}
+	return &CurrValDetails{CurrPromiseCount: 1}
 }
 
 func ResetCurrVal(conf *Config) {
 	conf.CurrVal = nil
+}
+
+type AcceptValDetails struct {
+	ServersRespNumber int
+	MaxAcceptVal      *common.Ballot
+	BallotNumber      *common.Ballot
+	Transactions      []*common.ProcessTxnRequest
+}
+
+func ResetAcceptValDetails(conf *Config) {
+	conf.AcceptVal = nil
+}
+
+type AcceptedServersInfo struct {
+	CurrentAcceptedCount int
+	ServerAddresses      []string
 }
 
 func GetConfig() *Config {

@@ -6,12 +6,12 @@ import (
 
 	common "GolandProjects/apaxos-gautamsardana/api_common"
 	"GolandProjects/apaxos-gautamsardana/server_alice/config"
+	"GolandProjects/apaxos-gautamsardana/server_alice/logic/outbound"
 	"GolandProjects/apaxos-gautamsardana/server_alice/utils"
 )
 
-func Prepare(ctx context.Context, req *common.Prepare, conf *config.Config) error {
+func Prepare(ctx context.Context, conf *config.Config, req *common.Prepare) error {
 	if !isValidBallot(req, conf) {
-		//invalid prepare request -- do nothing (check)
 		return errors.New("invalid ballot")
 	}
 	// valid prepare request -- process
@@ -19,7 +19,7 @@ func Prepare(ctx context.Context, req *common.Prepare, conf *config.Config) erro
 
 	// need to check for older promises here -- check whether to send old acceptNum,Val or nil with local txns
 
-	//outbound.Promise(true, &common.Ballot{TermNumber: req.BallotNum.TermNumber, ServerNumber: req.BallotNum.ServerNumber})
+	outbound.Promise(ctx, conf, &common.Ballot{TermNumber: req.BallotNum.TermNumber, ServerNumber: req.BallotNum.ServerNumber})
 
 	return nil
 }

@@ -15,6 +15,12 @@ import (
 	serverPool "GolandProjects/apaxos-gautamsardana/server_pool"
 )
 
+// todo: have a flag somewhere so that the servers who are not live will not send back the promise
+
+// todo: when leader gets promises from majority -- the leader's accepted values will also be
+// updated because it is implied that the leader already sent the accept message to itself AND
+// received the accepted value from itself
+
 func main() {
 	conf := config.GetConfig()
 	config.SetupDB(conf)

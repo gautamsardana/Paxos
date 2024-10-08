@@ -6,10 +6,11 @@ import (
 
 	common "GolandProjects/apaxos-gautamsardana/api_common"
 	"GolandProjects/apaxos-gautamsardana/server_alice/config"
-	logic2 "GolandProjects/apaxos-gautamsardana/server_alice/logic/outbound"
-	"GolandProjects/apaxos-gautamsardana/server_alice/storage"
+	"GolandProjects/apaxos-gautamsardana/server_alice/logic/outbound"
 	"GolandProjects/apaxos-gautamsardana/server_alice/storage/datastore"
 )
+
+// todo - also add the balances of each server
 
 func ProcessTxn(ctx context.Context, req *common.ProcessTxnRequest, conf *config.Config) error {
 	transaction, err := datastore.GetTransactionByMsgID(conf.DataStore, req.MsgID)
@@ -20,7 +21,7 @@ func ProcessTxn(ctx context.Context, req *common.ProcessTxnRequest, conf *config
 		return fmt.Errorf("transaction with same msgID processed before")
 	}
 
-	balance := conf.LogStore.GetBalance()
+	balance := conf.LogStore.Balance
 
 	if balance >= req.Amount {
 		err = ExecuteTxn(ctx, balance, req, conf)
@@ -30,21 +31,13 @@ func ProcessTxn(ctx context.Context, req *common.ProcessTxnRequest, conf *config
 	} else {
 		fmt.Println("this is where the magic happens!")
 		// initiate paxos
-		logic2.Prepare(ctx, conf)
+		outbound.Prepare(ctx, conf)
 	}
 	return nil
 }
 
 func ExecuteTxn(ctx context.Context, balance float32, req *common.ProcessTxnRequest, conf *config.Config) error {
-	txnDetails := storage.Transaction{
-		MsgID:    req.MsgID,
-		Sender:   req.Sender,
-		Receiver: req.Receiver,
-		Amount:   req.Amount,
-	}
-	fmt.Println(conf.LogStore.Logs, conf.LogStore.Balance)
-
-	conf.LogStore.AddTransactionLog(txnDetails)
+	conf.LogStore.AddTransactionLog(req)
 
 	fmt.Println(conf.LogStore.Logs, conf.LogStore.Balance)
 	return nil

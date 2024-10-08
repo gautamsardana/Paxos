@@ -1,13 +1,12 @@
 package logstore
 
 import (
+	common "GolandProjects/apaxos-gautamsardana/api_common"
 	"sync"
-
-	"GolandProjects/apaxos-gautamsardana/server_alice/storage"
 )
 
 type LogStore struct {
-	Logs    []storage.Transaction
+	Logs    []*common.ProcessTxnRequest
 	Balance float32
 	Mu      sync.Mutex
 }
@@ -15,7 +14,7 @@ type LogStore struct {
 func NewLogStore(balance float32) *LogStore {
 	return &LogStore{
 		Balance: balance,
-		Logs:    []storage.Transaction{},
+		Logs:    []*common.ProcessTxnRequest{},
 	}
 }
 
@@ -26,7 +25,7 @@ func (store *LogStore) GetBalance() float32 {
 	return store.Balance
 }
 
-func (store *LogStore) AddTransactionLog(log storage.Transaction) {
+func (store *LogStore) AddTransactionLog(log *common.ProcessTxnRequest) {
 	store.Mu.Lock()
 	defer store.Mu.Unlock()
 

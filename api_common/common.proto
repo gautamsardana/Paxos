@@ -10,6 +10,8 @@ service Paxos {
   rpc ProcessTxn(common.ProcessTxnRequest) returns (google.protobuf.Empty);
   rpc Prepare(common.Prepare) returns (google.protobuf.Empty);
   rpc Promise(common.Promise) returns (google.protobuf.Empty);
+  rpc Accept(common.Accept) returns (google.protobuf.Empty);
+  rpc Accepted(common.Accepted) returns (google.protobuf.Empty);
 }
 
 message ProcessTxnRequest {
@@ -30,8 +32,21 @@ message Prepare {
 
 message Promise {
   bool promiseAck = 1;
-  Ballot ballotNum = 2;
-  Ballot acceptNum = 3;
-  repeated ProcessTxnRequest acceptVal = 4;
-  repeated ProcessTxnRequest localVal = 5;
+  int32 serverNumber = 2;
+  Ballot ballotNum = 3;
+  Ballot acceptNum = 4;
+  repeated ProcessTxnRequest acceptVal = 5;
+  repeated ProcessTxnRequest localVal = 6;
+}
+
+message Accept {
+  Ballot ballotNum = 1;
+  repeated ProcessTxnRequest acceptVal = 2;
+  repeated string serverAddresses = 3;
+}
+
+message Accepted {
+  Ballot ballotNum = 1;
+  repeated ProcessTxnRequest acceptVal = 2;
+  int32 serverNumber = 3;
 }
