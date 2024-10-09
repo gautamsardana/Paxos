@@ -12,6 +12,7 @@ service Paxos {
   rpc Promise(common.Promise) returns (google.protobuf.Empty);
   rpc Accept(common.Accept) returns (google.protobuf.Empty);
   rpc Accepted(common.Accepted) returns (google.protobuf.Empty);
+  rpc Commit(common.Commit) returns (google.protobuf.Empty);
 }
 
 message ProcessTxnRequest {
@@ -49,4 +50,10 @@ message Accepted {
   Ballot ballotNum = 1;
   repeated ProcessTxnRequest acceptVal = 2;
   int32 serverNumber = 3;
+}
+
+message Commit {
+  Ballot ballotNum = 1;
+  repeated ProcessTxnRequest acceptVal = 2;
+  repeated string serverAddresses = 3;
 }

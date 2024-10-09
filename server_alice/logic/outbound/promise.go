@@ -20,7 +20,12 @@ func Promise(ctx context.Context, conf *config.Config, ballotNumber *common.Ball
 
 	if conf.AcceptVal == nil {
 		// send current local logs
-		promiseReq.LocalVal = conf.LogStore.Logs
+		//conf.CurrPromiseSeq++
+		//promiseReq.LocalVal = conf.LogStore.Logs[conf.CurrPromiseSeq]
+
+		for _, txn := range conf.LogStore.Logs {
+			promiseReq.LocalVal = append(promiseReq.LocalVal, txn)
+		}
 
 	} else {
 		// send existing acceptNum and acceptVal

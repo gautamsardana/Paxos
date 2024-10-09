@@ -1,4 +1,4 @@
-package logic
+package inbound
 
 import (
 	"context"
@@ -24,7 +24,7 @@ func ProcessTxn(ctx context.Context, req *common.ProcessTxnRequest, conf *config
 	balance := conf.LogStore.Balance
 
 	if balance >= req.Amount {
-		err = ExecuteTxn(ctx, balance, req, conf)
+		err = ExecuteTxn(ctx, req, conf)
 		if err != nil {
 			return err
 		}
@@ -36,7 +36,8 @@ func ProcessTxn(ctx context.Context, req *common.ProcessTxnRequest, conf *config
 	return nil
 }
 
-func ExecuteTxn(ctx context.Context, balance float32, req *common.ProcessTxnRequest, conf *config.Config) error {
+func ExecuteTxn(ctx context.Context, req *common.ProcessTxnRequest, conf *config.Config) error {
+	//sequenceNumber := conf.CurrPromiseSeq + 1
 	conf.LogStore.AddTransactionLog(req)
 
 	fmt.Println(conf.LogStore.Logs, conf.LogStore.Balance)

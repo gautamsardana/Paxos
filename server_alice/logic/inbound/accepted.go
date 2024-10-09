@@ -21,10 +21,15 @@ func Accepted(ctx context.Context, conf *config.Config, req *common.Accepted) er
 	}
 	conf.AcceptedServers.CurrentAcceptedCount++
 	conf.AcceptedServers.ServerAddresses = append(conf.AcceptedServers.ServerAddresses,
-		utils.MapServerNumberToAddress[req.BallotNum.ServerNumber])
+		utils.MapServerNumberToAddress[req.ServerNumber])
 
 	// if majority received -
-	outbound.Commit(ctx, conf, req)
+	commitReq := &common.Commit{
+		BallotNum:       req.BallotNum,
+		AcceptVal:       req.AcceptVal,
+		ServerAddresses: conf.AcceptedServers.ServerAddresses,
+	}
+	outbound.Commit(ctx, conf, commitReq)
 
 	return nil
 }

@@ -25,6 +25,7 @@ const (
 	Paxos_Promise_FullMethodName    = "/common.Paxos/Promise"
 	Paxos_Accept_FullMethodName     = "/common.Paxos/Accept"
 	Paxos_Accepted_FullMethodName   = "/common.Paxos/Accepted"
+	Paxos_Commit_FullMethodName     = "/common.Paxos/Commit"
 )
 
 // PaxosClient is the client API for Paxos service.
@@ -36,6 +37,7 @@ type PaxosClient interface {
 	Promise(ctx context.Context, in *Promise, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	Accept(ctx context.Context, in *Accept, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	Accepted(ctx context.Context, in *Accepted, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	Commit(ctx context.Context, in *Commit, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type paxosClient struct {
@@ -96,6 +98,16 @@ func (c *paxosClient) Accepted(ctx context.Context, in *Accepted, opts ...grpc.C
 	return out, nil
 }
 
+func (c *paxosClient) Commit(ctx context.Context, in *Commit, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, Paxos_Commit_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PaxosServer is the server API for Paxos service.
 // All implementations must embed UnimplementedPaxosServer
 // for forward compatibility.
@@ -105,6 +117,7 @@ type PaxosServer interface {
 	Promise(context.Context, *Promise) (*emptypb.Empty, error)
 	Accept(context.Context, *Accept) (*emptypb.Empty, error)
 	Accepted(context.Context, *Accepted) (*emptypb.Empty, error)
+	Commit(context.Context, *Commit) (*emptypb.Empty, error)
 	mustEmbedUnimplementedPaxosServer()
 }
 
@@ -129,6 +142,9 @@ func (UnimplementedPaxosServer) Accept(context.Context, *Accept) (*emptypb.Empty
 }
 func (UnimplementedPaxosServer) Accepted(context.Context, *Accepted) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Accepted not implemented")
+}
+func (UnimplementedPaxosServer) Commit(context.Context, *Commit) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Commit not implemented")
 }
 func (UnimplementedPaxosServer) mustEmbedUnimplementedPaxosServer() {}
 func (UnimplementedPaxosServer) testEmbeddedByValue()               {}
@@ -241,6 +257,24 @@ func _Paxos_Accepted_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Paxos_Commit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Commit)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PaxosServer).Commit(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Paxos_Commit_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PaxosServer).Commit(ctx, req.(*Commit))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Paxos_ServiceDesc is the grpc.ServiceDesc for Paxos service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -267,6 +301,10 @@ var Paxos_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Accepted",
 			Handler:    _Paxos_Accepted_Handler,
+		},
+		{
+			MethodName: "Commit",
+			Handler:    _Paxos_Commit_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

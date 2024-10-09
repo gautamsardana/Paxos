@@ -62,7 +62,9 @@ func AddBallot(conf *config.Config, req *common.Promise) {
 }
 
 func AddLocalTxns(conf *config.Config) {
-	conf.CurrVal.Transactions = append(conf.CurrVal.Transactions, conf.LogStore.Logs...)
+	for _, txn := range conf.LogStore.Logs {
+		conf.CurrVal.Transactions = append(conf.CurrVal.Transactions, txn)
+	}
 }
 
 func AddNewTxns(conf *config.Config, req *common.Promise) {

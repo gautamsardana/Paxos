@@ -25,8 +25,9 @@ type Config struct {
 	LogStore        *logstore.LogStore
 	ServerAddresses []string `json:"server_addresses"`
 	Pool            *pool.ServerPool
-	CurrBallot      BallotDetails        // for each server maintaining their ballots
-	CurrVal         *CurrValDetails      // for leader getting promise requests
+	CurrBallot      BallotDetails   // for each server maintaining their ballots
+	CurrVal         *CurrValDetails // for leader getting promise requests
+	//CurrPromiseSeq  int                  `json:"curr_promise_seq"` // for follower to maintain the txns which are promised
 	AcceptVal       *AcceptValDetails    // for follower getting accept requests
 	AcceptedServers *AcceptedServersInfo // for leader getting accepted requests
 }
