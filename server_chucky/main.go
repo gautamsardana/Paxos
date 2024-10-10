@@ -7,11 +7,11 @@ import (
 	"net"
 
 	common "GolandProjects/apaxos-gautamsardana/api_common"
-	"GolandProjects/apaxos-gautamsardana/server_bob/api"
-	"GolandProjects/apaxos-gautamsardana/server_bob/config"
-	"GolandProjects/apaxos-gautamsardana/server_bob/storage/datastore"
-	"GolandProjects/apaxos-gautamsardana/server_bob/storage/logstore"
-	"GolandProjects/apaxos-gautamsardana/server_bob/utils"
+	"GolandProjects/apaxos-gautamsardana/server_chucky/api"
+	"GolandProjects/apaxos-gautamsardana/server_chucky/config"
+	"GolandProjects/apaxos-gautamsardana/server_chucky/storage/datastore"
+	"GolandProjects/apaxos-gautamsardana/server_chucky/storage/logstore"
+	"GolandProjects/apaxos-gautamsardana/server_chucky/utils"
 	serverPool "GolandProjects/apaxos-gautamsardana/server_pool"
 )
 

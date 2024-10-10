@@ -1,9 +1,18 @@
 {
   "port": "8081",
-  "database": {
-    "dsn": "root@tcp(localhost:3306)/test",
+  "server_number": 2,
+  "client_name": "Bob",
+  "server_total": 5,
+  "db_creds": {
+    "dsn": "root@tcp(localhost:3306)/server_b",
     "host": "localhost",
     "user": "root",
     "password": ""
-  }
+  },
+  "server_addresses": [
+    "localhost:8080",
+    "localhost:8082",
+    "localhost:8083",
+    "localhost:8084"
+  ]
 }

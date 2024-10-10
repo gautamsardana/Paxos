@@ -14,7 +14,7 @@ import (
 	pool "GolandProjects/apaxos-gautamsardana/server_pool"
 )
 
-const configPath = "/go/src/GolandProjects/CSE535_Project1/server_alice/config/config.json"
+const configPath = "/go/src/GolandProjects/apaxos-gautamsardana/server_alice/config/config.json"
 
 type Config struct {
 	Port            string  `json:"port"`

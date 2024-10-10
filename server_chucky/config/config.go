@@ -10,11 +10,11 @@ import (
 	"time"
 
 	common "GolandProjects/apaxos-gautamsardana/api_common"
-	"GolandProjects/apaxos-gautamsardana/server_bob/storage/logstore"
+	"GolandProjects/apaxos-gautamsardana/server_chucky/storage/logstore"
 	pool "GolandProjects/apaxos-gautamsardana/server_pool"
 )
 
-const configPath = "/go/src/GolandProjects/apaxos-gautamsardana/server_bob/config/config.json"
+const configPath = "/go/src/GolandProjects/apaxos-gautamsardana/server_chucky/config/config.json"
 
 type Config struct {
 	Port            string  `json:"port"`

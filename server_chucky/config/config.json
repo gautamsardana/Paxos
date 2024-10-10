@@ -1,17 +1,17 @@
 {
-  "port": "8080",
-  "server_number": 1,
-  "client_name": "Alice",
+  "port": "8082",
+  "server_number": 3,
+  "client_name": "Chucky",
   "server_total": 5,
   "db_creds": {
-    "dsn": "root@tcp(localhost:3306)/server_a",
+    "dsn": "root@tcp(localhost:3306)/server_c",
     "host": "localhost",
     "user": "root",
     "password": ""
   },
   "server_addresses": [
+    "localhost:8080",
     "localhost:8081",
-    "localhost:8082",
     "localhost:8083",
     "localhost:8084"
   ]

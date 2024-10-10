@@ -6,10 +6,10 @@ import (
 	"strconv"
 	"strings"
 
-	"GolandProjects/apaxos-gautamsardana/server_alice/config"
+	"GolandProjects/apaxos-gautamsardana/server_chucky/config"
 )
 
-const ballotFilePath = "/go/src/GolandProjects/apaxos-gautamsardana/server_alice/ballot.txt"
+const ballotFilePath = "/go/src/GolandProjects/apaxos-gautamsardana/server_chucky/ballot.txt"
 
 var MapServerNumberToAddress = map[int32]string{
 	1: "localhost:8080",

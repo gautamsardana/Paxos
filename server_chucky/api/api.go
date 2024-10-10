@@ -6,8 +6,8 @@ import (
 	"log"
 
 	common "GolandProjects/apaxos-gautamsardana/api_common"
-	"GolandProjects/apaxos-gautamsardana/server_bob/config"
-	"GolandProjects/apaxos-gautamsardana/server_bob/logic/inbound"
+	"GolandProjects/apaxos-gautamsardana/server_chucky/config"
+	"GolandProjects/apaxos-gautamsardana/server_chucky/logic/inbound"
 )
 
 type Server struct {
