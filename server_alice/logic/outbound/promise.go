@@ -10,6 +10,7 @@ import (
 )
 
 // i am a follower - i got the leader's prepare. I need to send back my promise
+// todo - only send this promise if the server is live based on the input
 
 func Promise(ctx context.Context, conf *config.Config, ballotNumber *common.Ballot) {
 	promiseReq := &common.Promise{

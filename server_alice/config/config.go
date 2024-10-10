@@ -7,6 +7,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"os"
+	"time"
 
 	common "GolandProjects/apaxos-gautamsardana/api_common"
 	"GolandProjects/apaxos-gautamsardana/server_alice/storage/logstore"
@@ -19,17 +20,17 @@ type Config struct {
 	Port            string  `json:"port"`
 	ServerNumber    int32   `json:"server_number"`
 	ClientName      string  `json:"client_name"`
-	ServerTotal     int32   `json:"server_total"`
+	ServerTotal     int     `json:"server_total"`
 	DBCreds         DBCreds `json:"db_creds"`
 	DataStore       *sql.DB
 	LogStore        *logstore.LogStore
 	ServerAddresses []string `json:"server_addresses"`
 	Pool            *pool.ServerPool
-	CurrBallot      BallotDetails   // for each server maintaining their ballots
-	CurrVal         *CurrValDetails // for leader getting promise requests
-	//CurrPromiseSeq  int                  `json:"curr_promise_seq"` // for follower to maintain the txns which are promised
+	CurrBallot      BallotDetails        // for each server maintaining their ballots
+	CurrVal         *CurrValDetails      // for leader getting promise requests
 	AcceptVal       *AcceptValDetails    // for follower getting accept requests
 	AcceptedServers *AcceptedServersInfo // for leader getting accepted requests
+	MajorityHandler *MajorityHandlerDetails
 }
 
 type DBCreds struct {
@@ -74,6 +75,20 @@ func ResetAcceptValDetails(conf *Config) {
 type AcceptedServersInfo struct {
 	CurrentAcceptedCount int
 	ServerAddresses      []string
+}
+
+type MajorityHandlerDetails struct {
+	MajorityCh chan bool
+	TimeoutCh  chan bool
+	Timeout    time.Duration
+}
+
+func NewMajorityHandler(timeout time.Duration) *MajorityHandlerDetails {
+	return &MajorityHandlerDetails{
+		MajorityCh: make(chan bool),
+		TimeoutCh:  make(chan bool),
+		Timeout:    timeout,
+	}
 }
 
 func GetConfig() *Config {
