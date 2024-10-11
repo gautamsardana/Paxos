@@ -13,6 +13,8 @@ import (
 // todo - also add the balances of each server
 
 func ProcessTxn(ctx context.Context, req *common.ProcessTxnRequest, conf *config.Config) error {
+	fmt.Printf("Server %d: received process txn request:%v\n", conf.ServerNumber, req)
+
 	transaction, err := datastore.GetTransactionByMsgID(conf.DataStore, req.MsgID)
 	if err != nil {
 		return err
@@ -37,7 +39,7 @@ func ProcessTxn(ctx context.Context, req *common.ProcessTxnRequest, conf *config
 }
 
 func ExecuteTxn(ctx context.Context, req *common.ProcessTxnRequest, conf *config.Config) error {
-	//sequenceNumber := conf.CurrPromiseSeq + 1
+	fmt.Printf("Server %d: executing txn: %v\n", conf.ServerNumber, req)
 	conf.LogStore.AddTransactionLog(req)
 
 	fmt.Println(conf.LogStore.Logs, conf.LogStore.Balance)

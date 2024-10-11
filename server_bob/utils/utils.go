@@ -39,9 +39,9 @@ func GetTermAndServerNumber(ballot string) (int32, int32) {
 }
 
 func UpdateBallot(conf *config.Config, updatedTermNumber, updatedServerNumber int32) {
-	dir, _ := os.Getwd()
+	homeDir, _ := os.UserHomeDir()
 	updatedFileContent := strconv.Itoa(int(updatedTermNumber)) + "." + strconv.Itoa(int(updatedServerNumber))
-	err := os.WriteFile(dir+ballotFilePath, []byte(updatedFileContent), 0777)
+	err := os.WriteFile(homeDir+ballotFilePath, []byte(updatedFileContent), 0777)
 	if err != nil {
 		log.Fatal(err)
 	}

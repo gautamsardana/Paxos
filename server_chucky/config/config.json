@@ -4,7 +4,7 @@
   "client_name": "Chucky",
   "server_total": 5,
   "db_creds": {
-    "dsn": "root@tcp(localhost:3306)/server_c",
+    "dsn": "root@tcp(localhost:3306)/server_chucky",
     "host": "localhost",
     "user": "root",
     "password": ""

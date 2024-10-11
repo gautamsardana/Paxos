@@ -18,12 +18,16 @@ func Accept(ctx context.Context, conf *config.Config, req *common.Accept) error 
 	/* todo - any case where this ballot number can be greater than your current ballot?
 	what happens when it is greater? Do you update your current ballot?
 	*/
+	fmt.Printf("Server %d: received accept from leader with request: %v\n", conf.ServerNumber, req)
+
 	if req.BallotNum.TermNumber < conf.CurrBallot.TermNumber {
 		return fmt.Errorf("outdated ballot number")
 	}
 
-	conf.AcceptVal.BallotNumber = req.BallotNum
-	conf.AcceptVal.Transactions = req.AcceptVal
+	conf.AcceptVal = &config.AcceptValDetails{
+		BallotNumber: req.BallotNum,
+		Transactions: req.AcceptVal,
+	}
 
 	acceptedReq := &common.Accepted{
 		BallotNum:    req.BallotNum,

@@ -13,6 +13,7 @@ import (
 //leader and wait for commit
 
 func Accepted(ctx context.Context, conf *config.Config, req *common.Accepted) {
+	fmt.Printf("Server %d: sending accepted with request: %v\n", conf.ServerNumber, req)
 	leaderAddress := utils.MapServerNumberToAddress[req.BallotNum.ServerNumber]
 	server, err := conf.Pool.GetServer(leaderAddress)
 	if err != nil {

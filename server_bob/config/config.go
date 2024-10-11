@@ -53,7 +53,7 @@ type CurrValDetails struct {
 	Transactions     []*common.ProcessTxnRequest
 }
 
-func CurrentValConstructor() *CurrValDetails {
+func NewCurrentVal() *CurrValDetails {
 	return &CurrValDetails{CurrPromiseCount: 1}
 }
 
@@ -62,19 +62,30 @@ func ResetCurrVal(conf *Config) {
 }
 
 type AcceptValDetails struct {
-	ServersRespNumber int
-	MaxAcceptVal      *common.Ballot
-	BallotNumber      *common.Ballot
-	Transactions      []*common.ProcessTxnRequest
+	//ServersRespNumber int
+	//MaxAcceptVal      *common.Ballot
+	BallotNumber *common.Ballot
+	Transactions []*common.ProcessTxnRequest
 }
 
-func ResetAcceptValDetails(conf *Config) {
+func NewAcceptVal() *AcceptValDetails {
+	return &AcceptValDetails{}
+}
+
+func ResetAcceptVal(conf *Config) {
 	conf.AcceptVal = nil
 }
 
 type AcceptedServersInfo struct {
-	CurrentAcceptedCount int
-	ServerAddresses      []string
+	CurrAcceptedCount int
+	ServerAddresses   []string
+}
+
+func NewAcceptedServersInfo() *AcceptedServersInfo {
+	return &AcceptedServersInfo{
+		CurrAcceptedCount: 1,
+		ServerAddresses:   make([]string, 0),
+	}
 }
 
 type MajorityHandlerDetails struct {

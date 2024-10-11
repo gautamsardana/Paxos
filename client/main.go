@@ -22,7 +22,7 @@ func main() {
 	//defer cancel()
 
 	msg_id, _ := uuid.NewUUID()
-	_, err = c.ProcessTxn(context.Background(), &common.ProcessTxnRequest{MsgID: msg_id.String(), Sender: "Alice", Receiver: "Bob", Amount: 10})
+	_, err = c.ProcessTxn(context.Background(), &common.ProcessTxnRequest{MsgID: msg_id.String(), Sender: "Alice", Receiver: "Chuck", Amount: 50})
 	if err != nil {
 		log.Fatalf("error calling function SayHello: %v", err)
 	}

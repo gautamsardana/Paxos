@@ -13,6 +13,7 @@ import (
 // todo - only send this promise if the server is live based on the input
 
 func Promise(ctx context.Context, conf *config.Config, ballotNumber *common.Ballot) {
+	fmt.Printf("Server %d: received prepare, sending promise\n", conf.ServerNumber)
 	promiseReq := &common.Promise{
 		PromiseAck:   true,
 		ServerNumber: conf.ServerNumber,
@@ -30,14 +31,15 @@ func Promise(ctx context.Context, conf *config.Config, ballotNumber *common.Ball
 
 	} else {
 		// send existing acceptNum and acceptVal
-		promiseReq.AcceptNum = conf.CurrVal.BallotNumber
-		promiseReq.AcceptVal = conf.CurrVal.Transactions
+		promiseReq.AcceptNum = conf.AcceptVal.BallotNumber
+		promiseReq.AcceptVal = conf.AcceptVal.Transactions
 	}
 	SendPromise(ctx, conf, promiseReq)
 }
 
 func SendPromise(ctx context.Context, conf *config.Config, req *common.Promise) {
 	leaderAddress := utils.MapServerNumberToAddress[req.BallotNum.ServerNumber]
+	fmt.Println(string(conf.ServerNumber)+"sending promise to address: %v, request: %v ", leaderAddress, req)
 	server, err := conf.Pool.GetServer(leaderAddress)
 	if err != nil {
 		fmt.Println(err)
