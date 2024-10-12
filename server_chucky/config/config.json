@@ -14,5 +14,6 @@
     "localhost:8081",
     "localhost:8083",
     "localhost:8084"
-  ]
+  ],
+  "retry_limit": 1
 }

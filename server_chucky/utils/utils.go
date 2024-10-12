@@ -25,6 +25,7 @@ func GetBallot(conf *config.Config) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	conf.CurrBallot = config.NewCurrBallot()
 	conf.CurrBallot.TermNumber, conf.CurrBallot.ServerNumber = GetTermAndServerNumber(string(fileContent))
 }
 

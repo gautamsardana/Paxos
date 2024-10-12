@@ -26,11 +26,15 @@ type Config struct {
 	LogStore        *logstore.LogStore
 	ServerAddresses []string `json:"server_addresses"`
 	Pool            *pool.ServerPool
-	CurrBallot      BallotDetails        // for each server maintaining their ballots
+	CurrTxn         *common.ProcessTxnRequest
+	CurrBallot      *common.Ballot       // for each server maintaining their ballots
 	CurrVal         *CurrValDetails      // for leader getting promise requests
 	AcceptVal       *AcceptValDetails    // for follower getting accept requests
 	AcceptedServers *AcceptedServersInfo // for leader getting accepted requests
 	MajorityHandler *MajorityHandlerDetails
+	CurrRetryCount  int
+	RetryLimit      int `json:"retry_limit"`
+	StartTime       time.Time
 }
 
 type DBCreds struct {
@@ -40,9 +44,8 @@ type DBCreds struct {
 	Password string `json:"password"`
 }
 
-type BallotDetails struct {
-	TermNumber   int32
-	ServerNumber int32
+func NewCurrBallot() *common.Ballot {
+	return &common.Ballot{}
 }
 
 type CurrValDetails struct {

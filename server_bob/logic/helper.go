@@ -3,7 +3,6 @@ package logic
 import (
 	"context"
 	"fmt"
-	"log"
 
 	common "GolandProjects/apaxos-gautamsardana/api_common"
 	"GolandProjects/apaxos-gautamsardana/server_bob/config"
@@ -56,7 +55,7 @@ func CommitTransaction(ctx context.Context, conf *config.Config, req *common.Com
 
 		err = datastore.InsertTransaction(tx, transaction)
 		if err != nil {
-			log.Printf("error while inserting txn, err: %v", err)
+			fmt.Printf("error while inserting txn, err: %v", err)
 			return fmt.Errorf("error while inserting txn: %v", err)
 		}
 		if txnDetails.Receiver == conf.ClientName {
@@ -65,7 +64,7 @@ func CommitTransaction(ctx context.Context, conf *config.Config, req *common.Com
 	}
 	err = datastore.UpdateBalance(tx, storage.User{User: conf.ClientName, Balance: currClientBalance})
 	if err != nil && err != datastore.ErrNoRowsUpdated {
-		log.Printf("error while updating balance, err: %v", err)
+		fmt.Printf("error while updating balance, err: %v\n", err)
 		return fmt.Errorf("error while updating balance, err: %v", err)
 	}
 	conf.LogStore.Balance = currClientBalance

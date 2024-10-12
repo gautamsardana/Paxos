@@ -1,12 +1,12 @@
 package service
 
 import (
-	"GolandProjects/apaxos-gautamsardana/server_alice/config"
+	"GolandProjects/apaxos-gautamsardana/server_bob/config"
 	"context"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"log"
 
-	"GolandProjects/apaxos-gautamsardana/server_alice/logic"
+	"GolandProjects/apaxos-gautamsardana/server_bob/logic"
 )
 
 func ProcessTxn(ctx context.Context, conf *config.Config) (*emptypb.Empty, error) {
