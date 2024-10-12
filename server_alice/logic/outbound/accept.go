@@ -14,13 +14,12 @@ import (
 func Accept(ctx context.Context, conf *config.Config, req *common.Accept) {
 	fmt.Printf("Server %d: sending accept with request: %v\n", conf.ServerNumber, req)
 	conf.MajorityHandler = config.NewMajorityHandler(50000 * time.Millisecond)
+	go WaitForMajorityAccepted(ctx, conf)
 	for _, serverAddress := range req.ServerAddresses {
 		server, err := conf.Pool.GetServer(serverAddress)
 		if err != nil {
 			fmt.Println(err)
 		}
-
-		go WaitForMajorityAccepted(ctx, conf)
 		_, err = server.Accept(ctx, req)
 		if err != nil {
 			fmt.Println(err)
@@ -39,11 +38,12 @@ func WaitForMajorityAccepted(ctx context.Context, conf *config.Config) {
 			ServerAddresses: conf.AcceptedServers.ServerAddresses,
 		}
 		Commit(ctx, conf, commitRequest)
+		return
 	case <-time.After(conf.MajorityHandler.Timeout):
 		fmt.Printf("Server %d: timed out waiting for accepted\n", conf.ServerNumber)
 		config.ResetCurrVal(conf)
 		config.ResetAcceptVal(conf)
 		conf.MajorityHandler.TimeoutCh <- true
+		return
 	}
-	return
 }

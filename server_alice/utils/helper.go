@@ -1,9 +1,8 @@
-package logic
+package utils
 
 import (
 	"context"
 	"fmt"
-	"log"
 
 	common "GolandProjects/apaxos-gautamsardana/api_common"
 	"GolandProjects/apaxos-gautamsardana/server_alice/config"
@@ -36,10 +35,10 @@ func CommitTransaction(ctx context.Context, conf *config.Config, req *common.Com
 
 	defer func() {
 		if p := recover(); p != nil {
-			_ = tx.Rollback()
+			tx.Rollback()
 			panic(p)
 		} else if err != nil {
-			_ = tx.Rollback()
+			tx.Rollback()
 		}
 	}()
 
@@ -51,11 +50,12 @@ func CommitTransaction(ctx context.Context, conf *config.Config, req *common.Com
 			Sender:   txnDetails.Sender,
 			Receiver: txnDetails.Receiver,
 			Amount:   txnDetails.Amount,
+			Term:     int(req.BallotNum.TermNumber),
 		}
 
 		err = datastore.InsertTransaction(tx, transaction)
 		if err != nil {
-			log.Printf("error while inserting txn, err: %v", err)
+			fmt.Printf("error while inserting txn, err: %v", err)
 			return fmt.Errorf("error while inserting txn: %v", err)
 		}
 		if txnDetails.Receiver == conf.ClientName {
@@ -63,8 +63,8 @@ func CommitTransaction(ctx context.Context, conf *config.Config, req *common.Com
 		}
 	}
 	err = datastore.UpdateBalance(tx, storage.User{User: conf.ClientName, Balance: currClientBalance})
-	if err != nil {
-		log.Printf("error while updating balance, err: %v", err)
+	if err != nil && err != datastore.ErrNoRowsUpdated {
+		fmt.Printf("error while updating balance, err: %v\n", err)
 		return fmt.Errorf("error while updating balance, err: %v", err)
 	}
 	conf.LogStore.Balance = currClientBalance

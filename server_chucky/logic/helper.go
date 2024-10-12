@@ -36,10 +36,10 @@ func CommitTransaction(ctx context.Context, conf *config.Config, req *common.Com
 
 	defer func() {
 		if p := recover(); p != nil {
-			_ = tx.Rollback()
+			tx.Rollback()
 			panic(p)
 		} else if err != nil {
-			_ = tx.Rollback()
+			tx.Rollback()
 		}
 	}()
 
@@ -51,6 +51,7 @@ func CommitTransaction(ctx context.Context, conf *config.Config, req *common.Com
 			Sender:   txnDetails.Sender,
 			Receiver: txnDetails.Receiver,
 			Amount:   txnDetails.Amount,
+			Term:     int(req.BallotNum.TermNumber),
 		}
 
 		err = datastore.InsertTransaction(tx, transaction)
@@ -63,7 +64,7 @@ func CommitTransaction(ctx context.Context, conf *config.Config, req *common.Com
 		}
 	}
 	err = datastore.UpdateBalance(tx, storage.User{User: conf.ClientName, Balance: currClientBalance})
-	if err != nil {
+	if err != nil && err != datastore.ErrNoRowsUpdated {
 		log.Printf("error while updating balance, err: %v", err)
 		return fmt.Errorf("error while updating balance, err: %v", err)
 	}

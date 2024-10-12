@@ -10,4 +10,5 @@ type Transaction struct {
 	Sender   string
 	Receiver string
 	Amount   float32
+	Term     int
 }

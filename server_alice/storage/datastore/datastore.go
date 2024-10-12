@@ -2,10 +2,13 @@ package datastore
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"GolandProjects/apaxos-gautamsardana/server_alice/storage"
 )
+
+var ErrNoRowsUpdated = errors.New("no rows updated for user")
 
 func GetBalance(db *sql.DB, user string) (float32, error) {
 	var balance float32
@@ -28,7 +31,7 @@ func UpdateBalance(tx *sql.Tx, user storage.User) error {
 	}
 	rowsAffected, _ := res.RowsAffected()
 	if rowsAffected == 0 {
-		return fmt.Errorf("no rows updated for user: %d", user)
+		return ErrNoRowsUpdated
 	}
 	return nil
 }
@@ -45,8 +48,8 @@ func GetTransactionByMsgID(db *sql.DB, msgID string) (*storage.Transaction, erro
 }
 
 func InsertTransaction(tx *sql.Tx, transaction storage.Transaction) error {
-	query := `INSERT INTO transaction (msg_id, sender, receiver, amount) VALUES (?, ?, ?, ?)`
-	_, err := tx.Exec(query, transaction.MsgID, transaction.Sender, transaction.Receiver, transaction.Amount)
+	query := `INSERT INTO transaction (msg_id, sender, receiver, amount, term) VALUES (?, ?, ?, ?, ?)`
+	_, err := tx.Exec(query, transaction.MsgID, transaction.Sender, transaction.Receiver, transaction.Amount, transaction.Term)
 	if err != nil {
 		return err
 	}

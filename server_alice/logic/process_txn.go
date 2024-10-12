@@ -1,4 +1,4 @@
-package inbound
+package logic
 
 import (
 	"context"
@@ -32,7 +32,7 @@ func ProcessTxn(ctx context.Context, req *common.ProcessTxnRequest, conf *config
 		}
 	} else {
 		fmt.Println("this is where the magic happens!")
-		// initiate paxos
+		conf.CurrTxn = req
 		outbound.Prepare(ctx, conf)
 	}
 	return nil

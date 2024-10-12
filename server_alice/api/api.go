@@ -7,6 +7,7 @@ import (
 
 	common "GolandProjects/apaxos-gautamsardana/api_common"
 	"GolandProjects/apaxos-gautamsardana/server_alice/config"
+	"GolandProjects/apaxos-gautamsardana/server_alice/logic"
 	"GolandProjects/apaxos-gautamsardana/server_alice/logic/inbound"
 )
 
@@ -16,7 +17,7 @@ type Server struct {
 }
 
 func (s *Server) ProcessTxn(ctx context.Context, req *common.ProcessTxnRequest) (*emptypb.Empty, error) {
-	err := inbound.ProcessTxn(ctx, req, s.Config)
+	err := logic.ProcessTxn(ctx, req, s.Config)
 	if err != nil {
 		log.Printf("Error processing txn: %v", err)
 		return nil, err

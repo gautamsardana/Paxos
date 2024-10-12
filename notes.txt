@@ -13,3 +13,17 @@ node (new stuff)
 
 This system will work both ways. Leader will update followers, and followers will also update leader.
 
+
+If you are a slow server and you want to send out a prepare, include the current ballot number + the
+ballot number of the last committed message in the prepare.
+If the last committed message is outdated, you have a new synchronize API to update your ballot number
+and commit new txns which other servers have already committed. Once this is done, try the prepare again.
+
+If you are a slow user, and someone else sends you a prepare that you realise has last committed as something
+that you dont have, you need to ask that server for new transactions. Send another sync request,
+wait for the response and then commit all those transactions. Can we make this synchronous? Should we?
+
+Future -
+Add created_at, updated_at time so that we know what the order of all txns is.
+
+transaction has already been committed or rolled back
