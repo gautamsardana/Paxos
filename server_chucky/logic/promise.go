@@ -22,10 +22,6 @@ func SendPromise(ctx context.Context, conf *config.Config, ballotNumber *common.
 	}
 
 	if conf.AcceptVal == nil {
-		// send current local logs
-		//conf.CurrPromiseSeq++
-		//promiseReq.LocalVal = conf.LogStore.Logs[conf.CurrPromiseSeq]
-
 		for _, txn := range conf.LogStore.Logs {
 			promiseReq.LocalVal = append(promiseReq.LocalVal, txn)
 		}

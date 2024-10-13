@@ -29,8 +29,6 @@ func SendAccepted(ctx context.Context, conf *config.Config, req *common.Accepted
 
 // i am the leader - i got the accepted from followers. Now I need to send them commit messages
 
-//todo: need to send commit only if i get accepted from majority
-
 func ReceiveAccepted(ctx context.Context, conf *config.Config, req *common.Accepted) error {
 	fmt.Printf("Server %d: received accepted with req: %v\n", conf.ServerNumber, req)
 

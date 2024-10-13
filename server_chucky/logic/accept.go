@@ -33,9 +33,10 @@ func WaitForMajorityAccepted(ctx context.Context, conf *config.Config) {
 	case <-conf.MajorityHandler.MajorityCh:
 		fmt.Printf("Server %d: majority accepted received\n", conf.ServerNumber)
 		commitRequest := &common.Commit{
-			BallotNum:       conf.AcceptVal.BallotNumber,
-			AcceptVal:       conf.AcceptVal.Transactions,
-			ServerAddresses: conf.AcceptedServers.ServerAddresses,
+			BallotNum:         conf.AcceptVal.BallotNumber,
+			AcceptVal:         conf.AcceptVal.Transactions,
+			ServerAddresses:   conf.AcceptedServers.ServerAddresses,
+			LastCommittedTerm: conf.AcceptVal.BallotNumber.TermNumber,
 		}
 		SendCommit(context.Background(), conf, commitRequest)
 		return

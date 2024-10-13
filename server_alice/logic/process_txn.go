@@ -34,11 +34,10 @@ func ProcessTxn(ctx context.Context, req *common.ProcessTxnRequest, conf *config
 		}
 	} else {
 		fmt.Println("this is where the magic happens!")
-
 		conf.CurrTxn = req
 		if retryFlag && conf.CurrRetryCount >= conf.RetryLimit {
-			fmt.Println("txn failed after 1 attempt")
-			return fmt.Errorf("txn failed after 1 attempt")
+			fmt.Println("txn failed after 3 attempts")
+			return fmt.Errorf("txn failed after 3 attempts")
 		}
 		conf.CurrRetryCount++
 		SendPrepare(context.Background(), conf)
@@ -54,44 +53,3 @@ func ExecuteTxn(ctx context.Context, req *common.ProcessTxnRequest, conf *config
 	fmt.Println(conf.LogStore.Logs, conf.LogStore.Balance)
 	return nil
 }
-
-//func ExecuteTxn(ctx context.Context, balance float32, req *common.ProcessTxnRequest, conf *config.Config) error {
-//	tx, err := conf.DataStore.BeginTx(ctx, nil)
-//	if err != nil {
-//		return fmt.Errorf("failed to begin transaction: %v", err)
-//	}
-//
-//	defer func() {
-//		if err != nil {
-//			tx.Rollback()
-//		}
-//	}()
-//
-//	txnDetails := storage.Transaction{
-//		MsgID:    req.MsgId,
-//		Sender:   req.Sender,
-//		Receiver: req.Receiver,
-//		Amount:   req.Amount,
-//	}
-//
-//	conf.LogStore.AddTransactionLog(txnDetails)
-//
-//	updatedBalance := balance - req.Amount
-//	updatedUser := storage.User{
-//		User:    req.Sender,
-//		Balance: updatedBalance,
-//	}
-//	err = datastore.UpdateBalance(tx, updatedUser)
-//	if err != nil {
-//		log.Printf("error while updating user balance, err: %v", err)
-//		return err
-//	}
-//
-//	err = tx.Commit()
-//	if err != nil {
-//		return fmt.Errorf("transaction commit failed: %v", err)
-//	}
-//
-//	fmt.Println(conf.LogStore)
-//	return nil
-//}

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	common "GolandProjects/apaxos-gautamsardana/api_common"
 	"GolandProjects/apaxos-gautamsardana/server_alice/storage"
 )
 
@@ -48,10 +49,47 @@ func GetTransactionByMsgID(db *sql.DB, msgID string) (*storage.Transaction, erro
 }
 
 func InsertTransaction(tx *sql.Tx, transaction storage.Transaction) error {
-	query := `INSERT INTO transaction (msg_id, sender, receiver, amount, term) VALUES (?, ?, ?, ?, ?)`
-	_, err := tx.Exec(query, transaction.MsgID, transaction.Sender, transaction.Receiver, transaction.Amount, transaction.Term)
+	query := `INSERT INTO transaction (msg_id, sender, receiver, amount, term, created_at) VALUES (?, ?, ?, ?, ?, ?)`
+	_, err := tx.Exec(query, transaction.MsgID, transaction.Sender, transaction.Receiver,
+		transaction.Amount, transaction.Term, transaction.CreatedAt)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func GetLatestTermNo(db *sql.DB) (int32, error) {
+	query := `SELECT term FROM transaction order by created_at desc limit 1`
+	var term int32
+	err := db.QueryRow(query).Scan(&term)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, nil
+		}
+		return 0, err
+	}
+	return term, nil
+}
+
+func GetTransactionsAfterTerm(db *sql.DB, term int32) ([]*common.ProcessTxnRequest, error) {
+	var transactions []*common.ProcessTxnRequest
+
+	query := `SELECT msg_id, sender, receiver, amount, term FROM transaction WHERE term > ? ORDER BY created_at`
+	rows, err := db.Query(query, term)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var txn common.ProcessTxnRequest
+		if err = rows.Scan(&txn.MsgID, &txn.Sender, &txn.Receiver, &txn.Amount, &txn.Term); err != nil {
+			return nil, err
+		}
+		transactions = append(transactions, &txn)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return transactions, nil
 }

@@ -1,16 +1,25 @@
 package logic
 
 import (
+	"GolandProjects/apaxos-gautamsardana/server_chucky/storage/datastore"
 	"context"
 	"fmt"
 
 	common "GolandProjects/apaxos-gautamsardana/api_common"
 	"GolandProjects/apaxos-gautamsardana/server_chucky/config"
+	"GolandProjects/apaxos-gautamsardana/server_chucky/utils"
 )
 
 // i am a leader - i got accepted requests from majority followers. Now I need to tell them to commit
 
 func SendCommit(ctx context.Context, conf *config.Config, req *common.Commit) {
+	for _, txn := range req.AcceptVal {
+		txn.Term = req.BallotNum.TermNumber
+	}
+
+	// if commitReq lastCommittedTerm is same as mine, meaning i have already pushed these txns before in my db
+	req.LastCommittedTerm = req.BallotNum.TermNumber
+
 	dbErr := CommitTransaction(ctx, conf, req)
 	if dbErr != nil {
 		return
@@ -48,7 +57,20 @@ func ReceiveCommit(ctx context.Context, conf *config.Config, req *common.Commit)
 	//todo, also check if the same txns are committed in your db already
 	fmt.Printf("Server %d: received commit from leader with request: %v\n", conf.ServerNumber, req)
 
-	err := CommitTransaction(ctx, conf, req)
+	lastCommittedTerm, err := datastore.GetLatestTermNo(conf.DataStore)
+	if err != nil {
+		return err
+	}
+	if req.LastCommittedTerm <= lastCommittedTerm {
+		fmt.Printf("Server %d: outdated commit request: %v\n", conf.ServerNumber, req)
+		return nil
+	}
+
+	if req.BallotNum.TermNumber > conf.CurrBallot.TermNumber {
+		utils.UpdateBallot(conf, req.BallotNum.TermNumber, req.BallotNum.ServerNumber)
+	}
+
+	err = CommitTransaction(ctx, conf, req)
 	if err != nil {
 		return err
 	}
@@ -56,6 +78,15 @@ func ReceiveCommit(ctx context.Context, conf *config.Config, req *common.Commit)
 	DeleteFromLogs(conf, req.AcceptVal)
 	config.ResetAcceptVal(conf)
 	fmt.Printf("Server %d: new txns committed, updated log:%v\n", conf.ServerNumber, conf.LogStore)
+
+	if req.IsSync {
+		go func() {
+			err = ProcessTxn(context.Background(), conf.CurrTxn, conf, true)
+			if err != nil {
+
+			}
+		}()
+	}
 	// todo update balance for all
 
 	return nil

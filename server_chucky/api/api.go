@@ -70,3 +70,12 @@ func (s *Server) Commit(ctx context.Context, req *common.Commit) (*emptypb.Empty
 	}
 	return nil, nil
 }
+
+func (s *Server) Sync(ctx context.Context, req *common.SyncRequest) (*emptypb.Empty, error) {
+	err := logic.SyncRequest(ctx, s.Config, req)
+	if err != nil {
+		log.Printf("Error processing sync request from slow follower: %v", err)
+		return nil, err
+	}
+	return nil, nil
+}

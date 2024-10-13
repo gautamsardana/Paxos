@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 	"fmt"
+	"time"
 
 	common "GolandProjects/apaxos-gautamsardana/api_common"
 	"GolandProjects/apaxos-gautamsardana/server_chucky/config"
@@ -46,11 +47,12 @@ func CommitTransaction(ctx context.Context, conf *config.Config, req *common.Com
 
 	for _, txnDetails := range req.AcceptVal {
 		transaction := storage.Transaction{
-			MsgID:    txnDetails.MsgID,
-			Sender:   txnDetails.Sender,
-			Receiver: txnDetails.Receiver,
-			Amount:   txnDetails.Amount,
-			Term:     int(req.BallotNum.TermNumber),
+			MsgID:     txnDetails.MsgID,
+			Sender:    txnDetails.Sender,
+			Receiver:  txnDetails.Receiver,
+			Amount:    txnDetails.Amount,
+			Term:      txnDetails.Term,
+			CreatedAt: time.Now(),
 		}
 
 		err = datastore.InsertTransaction(tx, transaction)

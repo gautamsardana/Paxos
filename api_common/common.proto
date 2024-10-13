@@ -13,6 +13,7 @@ service Paxos {
   rpc Accept(common.Accept) returns (google.protobuf.Empty);
   rpc Accepted(common.Accepted) returns (google.protobuf.Empty);
   rpc Commit(common.Commit) returns (google.protobuf.Empty);
+  rpc Sync(common.SyncRequest) returns (google.protobuf.Empty);
 }
 
 message ProcessTxnRequest {
@@ -20,6 +21,7 @@ message ProcessTxnRequest {
   string sender = 2;
   string receiver = 3;
   float amount = 4;
+  int32 term = 5;
 }
 
 message Ballot {
@@ -29,6 +31,7 @@ message Ballot {
 
 message Prepare {
   Ballot ballotNum = 1;
+  int32 LastCommittedTerm = 2;
 }
 
 message Promise {
@@ -56,4 +59,11 @@ message Commit {
   Ballot ballotNum = 1;
   repeated ProcessTxnRequest acceptVal = 2;
   repeated string serverAddresses = 3;
+  int32 LastCommittedTerm = 4;
+  bool isSync = 5;
+}
+
+message SyncRequest {
+  int32 LastCommittedTerm = 1;
+  int32 ServerNo = 2;
 }

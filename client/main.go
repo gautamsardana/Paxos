@@ -34,8 +34,8 @@ func main() {
 	_, err = c.ProcessTxn(ctx, &common.ProcessTxnRequest{
 		MsgID:    msg_id.String(),
 		Sender:   "Alice",
-		Receiver: "Chucky",
-		Amount:   20,
+		Receiver: "Bob",
+		Amount:   15,
 	})
 	if err != nil {
 		log.Fatalf("error calling function ProcessTxn: %v", err)
