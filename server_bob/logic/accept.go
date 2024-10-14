@@ -39,14 +39,13 @@ func WaitForMajorityAccepted(ctx context.Context, conf *config.Config) {
 			LastCommittedTerm: conf.AcceptVal.BallotNumber.TermNumber,
 		}
 		SendCommit(context.Background(), conf, commitRequest)
-		return
 	case <-time.After(conf.MajorityHandler.Timeout):
 		fmt.Printf("Server %d: timed out waiting for accepted\n", conf.ServerNumber)
 		config.ResetCurrVal(conf)
 		config.ResetAcceptVal(conf)
 		conf.MajorityHandler.TimeoutCh <- true
-		return
 	}
+	return
 }
 
 //i am a follower - i'm getting this accept from the leader. I will accept this value and

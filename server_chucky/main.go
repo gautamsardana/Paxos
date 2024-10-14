@@ -1,6 +1,8 @@
 package main
 
 import (
+	"GolandProjects/apaxos-gautamsardana/server_chucky/logic"
+	"GolandProjects/apaxos-gautamsardana/server_chucky/storage/datastore"
 	"fmt"
 	"google.golang.org/grpc"
 	"log"
@@ -9,7 +11,6 @@ import (
 	common "GolandProjects/apaxos-gautamsardana/api_common"
 	"GolandProjects/apaxos-gautamsardana/server_chucky/api"
 	"GolandProjects/apaxos-gautamsardana/server_chucky/config"
-	"GolandProjects/apaxos-gautamsardana/server_chucky/storage/datastore"
 	"GolandProjects/apaxos-gautamsardana/server_chucky/storage/logstore"
 	"GolandProjects/apaxos-gautamsardana/server_chucky/utils"
 	serverPool "GolandProjects/apaxos-gautamsardana/server_pool"
@@ -25,19 +26,32 @@ func main() {
 	conf := config.GetConfig()
 	config.SetupDB(conf)
 	utils.GetBallot(conf)
+	InitiateTxnQueue(conf)
 	InitiateLogStore(conf)
+	InitiateBalance(conf)
 	InitiateServerPool(conf)
+
+	logic.TransactionWorker(conf)
+
 	ListenAndServe(conf)
 }
 
+func InitiateTxnQueue(conf *config.Config) {
+	conf.TxnQueue = make([]*common.TxnRequest, 0)
+}
+
 func InitiateLogStore(conf *config.Config) {
+	logStore := logstore.NewLogStore()
+	conf.LogStore = logStore
+}
+
+func InitiateBalance(conf *config.Config) {
 	balance, err := datastore.GetBalance(conf.DataStore, conf.ClientName)
 	if err != nil {
 		fmt.Printf("error trying to fetch balance from datastore, err: %v", err)
 		balance = 100
 	}
-	logStore := logstore.NewLogStore(balance)
-	conf.LogStore = logStore
+	conf.Balance = balance
 }
 
 func InitiateServerPool(conf *config.Config) {

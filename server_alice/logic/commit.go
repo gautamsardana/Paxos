@@ -17,24 +17,17 @@ func SendCommit(ctx context.Context, conf *config.Config, req *common.Commit) {
 		txn.Term = req.BallotNum.TermNumber
 	}
 
-	// if commitReq lastCommittedTerm is same as mine, meaning i have already pushed these txns before in my db
-	req.LastCommittedTerm = req.BallotNum.TermNumber
-
 	dbErr := CommitTransaction(ctx, conf, req)
 	if dbErr != nil {
 		return
 	}
+	// if commitReq lastCommittedTerm is same as mine, meaning i have already pushed these txns before in my db
+	req.LastCommittedTerm = req.BallotNum.TermNumber
+
 	DeleteFromLogs(conf, req.AcceptVal)
 	config.ResetCurrVal(conf)
 	config.ResetAcceptVal(conf)
 	fmt.Printf("Server %d: new txns committed, updated log:%v\n", conf.ServerNumber, conf.LogStore)
-
-	go func() {
-		err := ProcessTxn(ctx, conf.CurrTxn, conf, true)
-		if err != nil {
-			fmt.Printf("Server %d: error processing txn:%v\n", conf.ServerNumber, conf.CurrTxn)
-		}
-	}()
 
 	fmt.Printf("Server %d: sending commit request with req: %v\n", conf.ServerNumber, req)
 	for _, serverAddress := range req.ServerAddresses {
@@ -78,16 +71,6 @@ func ReceiveCommit(ctx context.Context, conf *config.Config, req *common.Commit)
 	DeleteFromLogs(conf, req.AcceptVal)
 	config.ResetAcceptVal(conf)
 	fmt.Printf("Server %d: new txns committed, updated log:%v\n", conf.ServerNumber, conf.LogStore)
-
-	if req.IsSync {
-		go func() {
-			err = ProcessTxn(context.Background(), conf.CurrTxn, conf, true)
-			if err != nil {
-
-			}
-		}()
-	}
-	// todo update balance for all
 
 	return nil
 }

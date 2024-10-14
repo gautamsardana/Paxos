@@ -11,8 +11,15 @@ import (
 	common "GolandProjects/apaxos-gautamsardana/api_common"
 )
 
+var (
+	port     = "localhost:8080"
+	sender   = "Alice"
+	receiver = "Bob"
+	amount   = 110
+)
+
 func main() {
-	conn, err := grpc.Dial("localhost:8080", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(port, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("failed to connect to gRPC server at localhost:8080: %v", err)
 	}
@@ -31,11 +38,11 @@ func main() {
 	defer cancel()
 
 	// Call the ProcessTxn RPC method
-	_, err = c.ProcessTxn(ctx, &common.ProcessTxnRequest{
+	_, err = c.EnqueueTxn(ctx, &common.TxnRequest{
 		MsgID:    msg_id.String(),
-		Sender:   "Alice",
-		Receiver: "Bob",
-		Amount:   15,
+		Sender:   sender,
+		Receiver: receiver,
+		Amount:   float32(amount),
 	})
 	if err != nil {
 		log.Fatalf("error calling function ProcessTxn: %v", err)

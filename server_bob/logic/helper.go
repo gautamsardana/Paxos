@@ -11,6 +11,28 @@ import (
 	"GolandProjects/apaxos-gautamsardana/server_bob/storage/datastore"
 )
 
+func ValidateTxnInDB(conf *config.Config, req *common.TxnRequest) (*common.TxnRequest, error) {
+	txn, err := datastore.GetTransactionByMsgID(conf.DataStore, req.MsgID)
+	if err != nil {
+		return nil, err
+	}
+	return &common.TxnRequest{
+		MsgID:    txn.MsgID,
+		Sender:   txn.Sender,
+		Receiver: txn.Receiver,
+		Amount:   txn.Amount,
+		Term:     txn.Term,
+	}, nil
+}
+
+func ValidateTxnInLogs(conf *config.Config, req *common.TxnRequest) *common.TxnRequest {
+	txn, exists := conf.LogStore.Logs[req.MsgID]
+	if exists {
+		return txn
+	}
+	return nil
+}
+
 func AddBallot(conf *config.Config, req *common.Promise) {
 	conf.CurrVal.BallotNumber = req.BallotNum
 }
@@ -21,7 +43,7 @@ func AddLocalTxns(conf *config.Config) {
 	}
 }
 
-func AddNewTxns(conf *config.Config, req *common.Promise) {
+func AddNewTxnsToCurrVal(conf *config.Config, req *common.Promise) {
 	if req.LocalVal == nil {
 		return
 	}
@@ -43,7 +65,7 @@ func CommitTransaction(ctx context.Context, conf *config.Config, req *common.Com
 		}
 	}()
 
-	currClientBalance := conf.LogStore.Balance
+	currClientBalance := conf.Balance
 
 	for _, txnDetails := range req.AcceptVal {
 		transaction := storage.Transaction{
@@ -69,7 +91,7 @@ func CommitTransaction(ctx context.Context, conf *config.Config, req *common.Com
 		fmt.Printf("error while updating balance, err: %v\n", err)
 		return fmt.Errorf("error while updating balance, err: %v", err)
 	}
-	conf.LogStore.Balance = currClientBalance
+	conf.Balance = currClientBalance
 
 	err = tx.Commit()
 	if err != nil {
@@ -78,7 +100,7 @@ func CommitTransaction(ctx context.Context, conf *config.Config, req *common.Com
 	return nil
 }
 
-func DeleteFromLogs(conf *config.Config, transactions []*common.ProcessTxnRequest) {
+func DeleteFromLogs(conf *config.Config, transactions []*common.TxnRequest) {
 	for _, txn := range transactions {
 		if conf.LogStore.Logs[txn.MsgID] != nil {
 			delete(conf.LogStore.Logs, txn.MsgID)

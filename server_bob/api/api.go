@@ -14,15 +14,8 @@ type Server struct {
 	Config *config.Config
 }
 
-func (s *Server) ProcessTxn(ctx context.Context, req *common.ProcessTxnRequest) (*emptypb.Empty, error) {
-	s.Config.CurrRetryCount = 0
-	err := logic.ProcessTxn(ctx, req, s.Config, false)
-	if err != nil {
-		log.Printf("Error processing txn: %v", err)
-		return nil, err
-	}
-	log.Printf("txn successful!")
-
+func (s *Server) EnqueueTxn(ctx context.Context, req *common.TxnRequest) (*emptypb.Empty, error) {
+	_ = logic.EnqueueTxn(ctx, req, s.Config)
 	return nil, nil
 }
 

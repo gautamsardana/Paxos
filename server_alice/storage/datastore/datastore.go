@@ -41,11 +41,10 @@ func GetTransactionByMsgID(db *sql.DB, msgID string) (*storage.Transaction, erro
 	transaction := &storage.Transaction{}
 	query := `SELECT * FROM transaction WHERE msg_id = ?`
 	err := db.QueryRow(query, msgID).Scan(transaction)
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil {
 		return nil, err
-	} else {
-		return nil, nil
 	}
+	return transaction, nil
 }
 
 func InsertTransaction(tx *sql.Tx, transaction storage.Transaction) error {
@@ -71,8 +70,8 @@ func GetLatestTermNo(db *sql.DB) (int32, error) {
 	return term, nil
 }
 
-func GetTransactionsAfterTerm(db *sql.DB, term int32) ([]*common.ProcessTxnRequest, error) {
-	var transactions []*common.ProcessTxnRequest
+func GetTransactionsAfterTerm(db *sql.DB, term int32) ([]*common.TxnRequest, error) {
+	var transactions []*common.TxnRequest
 
 	query := `SELECT msg_id, sender, receiver, amount, term FROM transaction WHERE term > ? ORDER BY created_at`
 	rows, err := db.Query(query, term)
@@ -82,7 +81,7 @@ func GetTransactionsAfterTerm(db *sql.DB, term int32) ([]*common.ProcessTxnReque
 	defer rows.Close()
 
 	for rows.Next() {
-		var txn common.ProcessTxnRequest
+		var txn common.TxnRequest
 		if err = rows.Scan(&txn.MsgID, &txn.Sender, &txn.Receiver, &txn.Amount, &txn.Term); err != nil {
 			return nil, err
 		}

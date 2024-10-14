@@ -7,6 +7,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"os"
+	"sync"
 	"time"
 
 	common "GolandProjects/apaxos-gautamsardana/api_common"
@@ -26,14 +27,14 @@ type Config struct {
 	LogStore        *logstore.LogStore
 	ServerAddresses []string `json:"server_addresses"`
 	Pool            *pool.ServerPool
-	CurrTxn         *common.ProcessTxnRequest
 	CurrBallot      *common.Ballot       // for each server maintaining their ballots
 	CurrVal         *CurrValDetails      // for leader getting promise requests
 	AcceptVal       *AcceptValDetails    // for follower getting accept requests
 	AcceptedServers *AcceptedServersInfo // for leader getting accepted requests
 	MajorityHandler *MajorityHandlerDetails
-	CurrRetryCount  int
-	RetryLimit      int `json:"retry_limit"`
+	TxnQueue        []*common.TxnRequest
+	QueueMutex      sync.Mutex
+	Balance         float32
 	StartTime       time.Time
 }
 
@@ -53,7 +54,7 @@ type CurrValDetails struct {
 	ServerAddresses  []string
 	MaxAcceptVal     *common.Ballot
 	BallotNumber     *common.Ballot
-	Transactions     []*common.ProcessTxnRequest
+	Transactions     []*common.TxnRequest
 }
 
 func NewCurrentVal() *CurrValDetails {
@@ -68,7 +69,7 @@ type AcceptValDetails struct {
 	//ServersRespNumber int
 	//MaxAcceptVal      *common.Ballot
 	BallotNumber *common.Ballot
-	Transactions []*common.ProcessTxnRequest
+	Transactions []*common.TxnRequest
 }
 
 func NewAcceptVal() *AcceptValDetails {

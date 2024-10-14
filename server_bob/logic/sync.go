@@ -21,7 +21,6 @@ func SendSyncResponse(ctx context.Context, conf *config.Config, req *common.Sync
 		BallotNum:         conf.CurrBallot,
 		AcceptVal:         latestTxns,
 		LastCommittedTerm: lastCommittedTerm,
-		IsSync:            true,
 	}
 	server, err := conf.Pool.GetServer(utils.MapServerNumberToAddress[req.ServerNo])
 	if err != nil {

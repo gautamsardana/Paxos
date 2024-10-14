@@ -5,22 +5,15 @@ import (
 )
 
 type LogStore struct {
-	Logs    map[string]*common.ProcessTxnRequest
-	Balance float32
+	Logs map[string]*common.TxnRequest
 }
 
-func NewLogStore(balance float32) *LogStore {
+func NewLogStore() *LogStore {
 	return &LogStore{
-		Balance: balance,
-		Logs:    make(map[string]*common.ProcessTxnRequest),
+		Logs: make(map[string]*common.TxnRequest),
 	}
 }
 
-func (store *LogStore) GetBalance() float32 {
-	return store.Balance
-}
-
-func (store *LogStore) AddTransactionLog(txn *common.ProcessTxnRequest) {
+func (store *LogStore) AddTransactionLog(txn *common.TxnRequest) {
 	store.Logs[txn.MsgID] = txn
-	store.Balance -= txn.Amount
 }

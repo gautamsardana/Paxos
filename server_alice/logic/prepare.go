@@ -36,7 +36,6 @@ func SendPrepare(ctx context.Context, conf *config.Config) {
 			fmt.Println(err)
 		}
 
-		// todo : this will have more parameters here to notify servers what the last committed txn was
 		_, err = server.Prepare(ctx, prepareReq)
 		if err != nil {
 			fmt.Println(err)
@@ -84,10 +83,9 @@ func ReceivePrepare(ctx context.Context, conf *config.Config, req *common.Prepar
 		return fmt.Errorf("not a valid ballot, return error exit")
 	}
 
-	// valid prepare request -- proceed
-	utils.UpdateBallot(conf, req.BallotNum.TermNumber, req.BallotNum.ServerNumber)
-
-	// need to check for older promises here -- check whether to send old acceptNum,Val or nil with local txns
+	if req.BallotNum.TermNumber != conf.CurrBallot.TermNumber {
+		utils.UpdateBallot(conf, req.BallotNum.TermNumber, req.BallotNum.ServerNumber)
+	}
 
 	fmt.Println(string(conf.ServerNumber)+": sending promise with request: %v", req)
 	SendPromise(ctx, conf, &common.Ballot{TermNumber: req.BallotNum.TermNumber, ServerNumber: req.BallotNum.ServerNumber})

@@ -20,7 +20,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Paxos_ProcessTxn_FullMethodName = "/common.Paxos/ProcessTxn"
+	Paxos_EnqueueTxn_FullMethodName = "/common.Paxos/EnqueueTxn"
 	Paxos_Prepare_FullMethodName    = "/common.Paxos/Prepare"
 	Paxos_Promise_FullMethodName    = "/common.Paxos/Promise"
 	Paxos_Accept_FullMethodName     = "/common.Paxos/Accept"
@@ -33,7 +33,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PaxosClient interface {
-	ProcessTxn(ctx context.Context, in *ProcessTxnRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	EnqueueTxn(ctx context.Context, in *TxnRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	Prepare(ctx context.Context, in *Prepare, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	Promise(ctx context.Context, in *Promise, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	Accept(ctx context.Context, in *Accept, opts ...grpc.CallOption) (*emptypb.Empty, error)
@@ -50,10 +50,10 @@ func NewPaxosClient(cc grpc.ClientConnInterface) PaxosClient {
 	return &paxosClient{cc}
 }
 
-func (c *paxosClient) ProcessTxn(ctx context.Context, in *ProcessTxnRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *paxosClient) EnqueueTxn(ctx context.Context, in *TxnRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Paxos_ProcessTxn_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, Paxos_EnqueueTxn_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +124,7 @@ func (c *paxosClient) Sync(ctx context.Context, in *SyncRequest, opts ...grpc.Ca
 // All implementations must embed UnimplementedPaxosServer
 // for forward compatibility.
 type PaxosServer interface {
-	ProcessTxn(context.Context, *ProcessTxnRequest) (*emptypb.Empty, error)
+	EnqueueTxn(context.Context, *TxnRequest) (*emptypb.Empty, error)
 	Prepare(context.Context, *Prepare) (*emptypb.Empty, error)
 	Promise(context.Context, *Promise) (*emptypb.Empty, error)
 	Accept(context.Context, *Accept) (*emptypb.Empty, error)
@@ -141,8 +141,8 @@ type PaxosServer interface {
 // pointer dereference when methods are called.
 type UnimplementedPaxosServer struct{}
 
-func (UnimplementedPaxosServer) ProcessTxn(context.Context, *ProcessTxnRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ProcessTxn not implemented")
+func (UnimplementedPaxosServer) EnqueueTxn(context.Context, *TxnRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EnqueueTxn not implemented")
 }
 func (UnimplementedPaxosServer) Prepare(context.Context, *Prepare) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Prepare not implemented")
@@ -183,20 +183,20 @@ func RegisterPaxosServer(s grpc.ServiceRegistrar, srv PaxosServer) {
 	s.RegisterService(&Paxos_ServiceDesc, srv)
 }
 
-func _Paxos_ProcessTxn_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ProcessTxnRequest)
+func _Paxos_EnqueueTxn_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TxnRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PaxosServer).ProcessTxn(ctx, in)
+		return srv.(PaxosServer).EnqueueTxn(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Paxos_ProcessTxn_FullMethodName,
+		FullMethod: Paxos_EnqueueTxn_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PaxosServer).ProcessTxn(ctx, req.(*ProcessTxnRequest))
+		return srv.(PaxosServer).EnqueueTxn(ctx, req.(*TxnRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -317,8 +317,8 @@ var Paxos_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*PaxosServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "ProcessTxn",
-			Handler:    _Paxos_ProcessTxn_Handler,
+			MethodName: "EnqueueTxn",
+			Handler:    _Paxos_EnqueueTxn_Handler,
 		},
 		{
 			MethodName: "Prepare",
