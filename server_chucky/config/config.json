@@ -1,7 +1,7 @@
 {
   "port": "8082",
   "server_number": 3,
-  "client_name": "Chucky",
+  "client_name": "S3",
   "server_total": 5,
   "db_creds": {
     "dsn": "root@tcp(localhost:3306)/server_chucky",

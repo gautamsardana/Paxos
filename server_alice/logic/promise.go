@@ -14,7 +14,6 @@ import (
 // todo - only send this promise if the server is live based on the input
 
 func SendPromise(ctx context.Context, conf *config.Config, ballotNumber *common.Ballot) {
-	fmt.Printf("Server %d: received prepare, sending promise\n", conf.ServerNumber)
 	promiseReq := &common.Promise{
 		PromiseAck:   true,
 		ServerNumber: conf.ServerNumber,
@@ -36,7 +35,8 @@ func SendPromise(ctx context.Context, conf *config.Config, ballotNumber *common.
 
 func SendPromiseToLeader(ctx context.Context, conf *config.Config, req *common.Promise) {
 	leaderAddress := utils.MapServerNumberToAddress[req.BallotNum.ServerNumber]
-	fmt.Println(string(conf.ServerNumber)+"sending promise to address: %v, request: %v ", leaderAddress, req)
+	fmt.Printf("Server %d:sending promise to address: %v, request: %v\n", conf.ServerNumber, leaderAddress, req)
+
 	server, err := conf.Pool.GetServer(leaderAddress)
 	if err != nil {
 		fmt.Println(err)
@@ -56,16 +56,15 @@ func ReceivePromise(ctx context.Context, conf *config.Config, req *common.Promis
 		return fmt.Errorf("promise not acknowledged, request canceled")
 	}
 
+	if conf.MajorityAchieved {
+		err := fmt.Errorf("Server %d: received a late promise, ignoring\n", conf.ServerNumber)
+		return err
+	}
+
 	if req.BallotNum.TermNumber != conf.CurrBallot.TermNumber ||
 		req.BallotNum.ServerNumber != conf.CurrBallot.ServerNumber {
 		return fmt.Errorf("ballot number mismatch, request canceled")
 	}
-
-	if conf.CurrVal == nil {
-		conf.CurrVal = config.NewCurrentVal()
-		AddBallot(conf, req)
-	}
-	//todo : this means that once the values are committed, you need to make currVal nil again
 
 	var lock sync.Mutex
 	lock.Lock()
@@ -85,9 +84,9 @@ func ReceivePromise(ctx context.Context, conf *config.Config, req *common.Promis
 	conf.CurrVal.CurrPromiseCount++
 	conf.CurrVal.ServerAddresses = append(conf.CurrVal.ServerAddresses, utils.MapServerNumberToAddress[req.ServerNumber])
 
-	if conf.CurrVal.CurrPromiseCount >= (conf.ServerTotal/2)+1 {
-		conf.MajorityHandler.MajorityCh <- true
-	}
+	//if conf.CurrVal.CurrPromiseCount >= (conf.ServerTotal/2)+1 {
+	//	conf.MajorityHandler.MajorityCh <- true
+	//}
 
 	return nil
 }

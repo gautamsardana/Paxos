@@ -39,8 +39,14 @@ func UpdateBalance(tx *sql.Tx, user storage.User) error {
 
 func GetTransactionByMsgID(db *sql.DB, msgID string) (*storage.Transaction, error) {
 	transaction := &storage.Transaction{}
-	query := `SELECT * FROM transaction WHERE msg_id = ?`
-	err := db.QueryRow(query, msgID).Scan(transaction)
+	query := `SELECT msg_id, sender, receiver, amount, term FROM transaction WHERE msg_id = ?`
+	err := db.QueryRow(query, msgID).Scan(
+		&transaction.MsgID,
+		&transaction.Sender,
+		&transaction.Receiver,
+		&transaction.Amount,
+		&transaction.Term,
+	)
 	if err != nil {
 		return nil, err
 	}

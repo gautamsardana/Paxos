@@ -1,50 +1,31 @@
 package main
 
 import (
-	"context"
-	"github.com/google/uuid"
+	"fmt"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"log"
-	"time"
+	"net"
 
 	common "GolandProjects/apaxos-gautamsardana/api_common"
-)
-
-var (
-	port     = "localhost:8080"
-	sender   = "Alice"
-	receiver = "Bob"
-	amount   = 110
+	"GolandProjects/apaxos-gautamsardana/client/api"
+	"GolandProjects/apaxos-gautamsardana/client/config"
 )
 
 func main() {
-	conn, err := grpc.Dial(port, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conf := config.GetConfig()
+	config.InitiateServerPool(conf)
+	ListenAndServe(conf)
+}
+
+func ListenAndServe(conf *config.Config) {
+	lis, err := net.Listen("tcp", ":"+conf.Port)
 	if err != nil {
-		log.Fatalf("failed to connect to gRPC server at localhost:8080: %v", err)
+		panic(err)
 	}
-	defer conn.Close()
-
-	c := common.NewPaxosClient(conn)
-
-	// Generate a new UUID
-	msg_id, err := uuid.NewUUID()
-	if err != nil {
-		log.Fatalf("failed to generate UUID: %v", err)
-	}
-
-	// Use a context with timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	// Call the ProcessTxn RPC method
-	_, err = c.EnqueueTxn(ctx, &common.TxnRequest{
-		MsgID:    msg_id.String(),
-		Sender:   sender,
-		Receiver: receiver,
-		Amount:   float32(amount),
-	})
-	if err != nil {
-		log.Fatalf("error calling function ProcessTxn: %v", err)
+	s := grpc.NewServer()
+	common.RegisterPaxosServer(s, &api.Client{Config: conf})
+	fmt.Printf("gRPC server running on port %v...\n", conf.Port)
+	if err := s.Serve(lis); err != nil {
+		log.Fatal(err)
 	}
 }

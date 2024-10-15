@@ -7,6 +7,7 @@ package common;
 option go_package = "/";
 
 service Paxos {
+  rpc ProcessTxn(common.TxnSet) returns (google.protobuf.Empty);
   rpc EnqueueTxn(common.TxnRequest) returns (google.protobuf.Empty);
   rpc Prepare(common.Prepare) returns (google.protobuf.Empty);
   rpc Promise(common.Promise) returns (google.protobuf.Empty);
@@ -14,6 +15,14 @@ service Paxos {
   rpc Accepted(common.Accepted) returns (google.protobuf.Empty);
   rpc Commit(common.Commit) returns (google.protobuf.Empty);
   rpc Sync(common.SyncRequest) returns (google.protobuf.Empty);
+  rpc GetBalance(GetBalanceRequest) returns (GetBalanceResponse);
+  rpc GetServerBalance(common.GetServerBalanceRequest) returns (GetServerBalanceResponse);
+}
+
+message TxnSet {
+  int32 SetNo = 1;
+  repeated TxnRequest Txns = 2;
+  repeated string LiveServers = 3;
 }
 
 message TxnRequest {
@@ -65,4 +74,23 @@ message Commit {
 message SyncRequest {
   int32 LastCommittedTerm = 1;
   int32 ServerNo = 2;
+}
+
+message GetBalanceRequest{
+  string user = 1;
+}
+
+message GetBalanceResponse {
+  float balance = 1;
+}
+
+message GetServerBalanceRequest{
+  int32 LastCommittedTerm = 1;
+  string user = 2;
+}
+
+message GetServerBalanceResponse{
+  Ballot ballotNum = 1;
+  repeated TxnRequest NewTxns = 2;
+  float balance = 3;
 }

@@ -1,62 +1,21 @@
 package main
 
 import (
+	common "GolandProjects/apaxos-gautamsardana/api_common"
 	"bufio"
 	"encoding/csv"
 	"fmt"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"os"
 	"strconv"
 	"strings"
 )
 
-const inputFilePath = "/input.csv"
+const inputFilePath = "input - Sheet1.csv"
 
-type Transaction struct {
-	Sender   string
-	Receiver string
-	Amount   int
-}
-
-type Set struct {
-	SetNumber    int
-	Transactions []Transaction
-	LiveServers  []string
-}
-
-var sets []Set
+var sets []*common.TxnSet
 var activeServers map[string]bool // A map to keep track of which servers are live
-
-// Simulated functions
-func printDB() {
-	fmt.Println("Printing database state...")
-}
-
-func printLog() {
-	fmt.Println("Printing transaction log...")
-}
-
-// Process transactions for a given set
-func processSet(s Set) {
-	fmt.Printf("Processing Set %d\n", s.SetNumber)
-
-	// Mark live servers for the current set
-	activeServers = make(map[string]bool)
-	for _, server := range s.LiveServers {
-		activeServers[server] = true
-	}
-
-	// Process each transaction
-	for _, t := range s.Transactions {
-		if activeServers[t.Sender] && activeServers[t.Receiver] {
-			fmt.Printf("Processed Transaction: %s -> %s : %d\n", t.Sender, t.Receiver, t.Amount)
-		} else {
-			fmt.Printf("Skipped Transaction: %s -> %s : %d (Inactive server)\n", t.Sender, t.Receiver, t.Amount)
-		}
-	}
-
-	// Simulate idle state after processing the set
-	fmt.Println("All servers are idle. You can now use commands like printDB or printLog.")
-}
 
 // Function to load test cases from a CSV file
 func loadCSV(filename string) error {
@@ -84,34 +43,34 @@ func loadCSV(filename string) error {
 		setNumber, _ := strconv.Atoi(setRow[0])
 
 		// Read the transactions for the current set
-		var transactions []Transaction
-		for _, txn := range strings.Split(setRow[1], " ") {
+		var transactions []*common.TxnRequest
+		for _, txn := range strings.Split(setRow[1], "\n") {
+			txn = strings.Trim(txn, "()")
 			parts := strings.Split(txn, ",")
-			amount, _ := strconv.Atoi(parts[2])
-			transactions = append(transactions, Transaction{
+			amount, _ := strconv.ParseFloat(parts[2], 32)
+			transactions = append(transactions, &common.TxnRequest{
 				Sender:   parts[0],
 				Receiver: parts[1],
-				Amount:   amount,
+				Amount:   float32(amount),
 			})
 		}
-
 		// Read the live servers for the current set
 		liveServers := strings.Split(strings.Trim(setRow[2], "[]"), ",")
-
 		// Store the set
-		sets = append(sets, Set{
-			SetNumber:    setNumber,
-			Transactions: transactions,
-			LiveServers:  liveServers,
+		sets = append(sets, &common.TxnSet{
+			SetNo:       int32(setNumber),
+			Txns:        transactions,
+			LiveServers: liveServers,
 		})
 	}
-
 	return nil
 }
 
 func main() {
-	// Load the CSV file
-	err := loadCSV("input - Sheet1.csv")
+
+	client := InitiateClient()
+
+	err := loadCSV(inputFilePath)
 	if err != nil {
 		fmt.Println("Error loading CSV:", err)
 		return
@@ -123,19 +82,25 @@ func main() {
 		fmt.Println("Press Enter to process the next set of transactions...")
 		scanner.Scan() // Wait for user input before processing the next set
 
-		processSet(set)
+		processSet(set, client)
 
 		// Allow user to run functions while idle
 		for {
-			fmt.Println("Type 'next' to process the next set, 'printDB' to print database, 'printLog' to print log:")
+			fmt.Println("Type 'next' to process the next set, 'printDB' to print database, 'printLog' to print log, balance to get balance:")
 			scanner.Scan()
 			input := scanner.Text()
 			if input == "next" {
 				break
 			} else if input == "printDB" {
-				printDB()
+				printDB(client)
 			} else if input == "printLog" {
-				printLog()
+				printLog(client)
+			} else if input == "balance" {
+				fmt.Println("Which user?")
+				scanner.Scan()
+				user := scanner.Text()
+				GetBalance(client, user)
+
 			} else {
 				fmt.Println("Unknown command")
 			}
@@ -143,4 +108,13 @@ func main() {
 	}
 
 	fmt.Println("All sets processed.")
+}
+
+func InitiateClient() common.PaxosClient {
+	conn, err := grpc.NewClient("localhost:8085", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return nil
+	}
+	client := common.NewPaxosClient(conn)
+	return client
 }

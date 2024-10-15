@@ -42,8 +42,9 @@ func ReceiveAccepted(ctx context.Context, conf *config.Config, req *common.Accep
 	defer lock.Unlock()
 
 	if conf.AcceptedServers == nil {
-		conf.AcceptedServers = config.NewAcceptedServersInfo()
+		config.NewAcceptedServersInfo(conf)
 	}
+
 	if conf.AcceptVal == nil {
 		conf.AcceptVal = config.NewAcceptVal()
 		conf.AcceptVal.BallotNumber = req.BallotNum

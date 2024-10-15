@@ -72,3 +72,21 @@ func (s *Server) Sync(ctx context.Context, req *common.SyncRequest) (*emptypb.Em
 	}
 	return nil, nil
 }
+
+func (s *Server) GetBalance(ctx context.Context, _ *common.GetBalanceRequest) (*common.GetBalanceResponse, error) {
+	resp, err := logic.GetBalance(ctx, s.Config)
+	if err != nil {
+		log.Printf("Error fetching balance: %v", err)
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (s *Server) GetServerBalance(ctx context.Context, req *common.GetServerBalanceRequest) (*common.GetServerBalanceResponse, error) {
+	resp, err := logic.GetServerBalance(ctx, s.Config, req)
+	if err != nil {
+		log.Printf("Error fetching balance from other servers: %v", err)
+		return nil, err
+	}
+	return resp, nil
+}

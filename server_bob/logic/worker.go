@@ -11,7 +11,7 @@ import (
 )
 
 func TransactionWorker(conf *config.Config) {
-	ticker := time.NewTicker(5 * time.Second)
+	ticker := time.NewTicker(2 * time.Second)
 
 	go func() {
 		for {
@@ -33,7 +33,8 @@ func QueueTransaction(conf *config.Config) {
 
 		err := ValidateTxn(conf, txn)
 		if err != nil {
-			fmt.Printf("Server %d: txn not valid", conf.ServerNumber)
+			fmt.Println(err)
+			fmt.Printf("Server %d: txn not valid\n", conf.ServerNumber)
 			return
 		}
 

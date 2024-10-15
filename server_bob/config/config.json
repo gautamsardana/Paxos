@@ -1,7 +1,7 @@
 {
   "port": "8081",
   "server_number": 2,
-  "client_name": "Bob",
+  "client_name": "S2",
   "server_total": 5,
   "db_creds": {
     "dsn": "root@tcp(localhost:3306)/server_bob",

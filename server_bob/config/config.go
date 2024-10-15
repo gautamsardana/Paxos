@@ -11,31 +11,84 @@ import (
 	"time"
 
 	common "GolandProjects/apaxos-gautamsardana/api_common"
+	"GolandProjects/apaxos-gautamsardana/server_bob/storage/datastore"
 	"GolandProjects/apaxos-gautamsardana/server_bob/storage/logstore"
-	pool "GolandProjects/apaxos-gautamsardana/server_pool"
+	serverPool "GolandProjects/apaxos-gautamsardana/server_pool"
 )
 
 const configPath = "/go/src/GolandProjects/apaxos-gautamsardana/server_bob/config/config.json"
 
 type Config struct {
-	Port            string  `json:"port"`
-	ServerNumber    int32   `json:"server_number"`
-	ClientName      string  `json:"client_name"`
-	ServerTotal     int     `json:"server_total"`
-	DBCreds         DBCreds `json:"db_creds"`
-	DataStore       *sql.DB
-	LogStore        *logstore.LogStore
-	ServerAddresses []string `json:"server_addresses"`
-	Pool            *pool.ServerPool
-	CurrBallot      *common.Ballot       // for each server maintaining their ballots
-	CurrVal         *CurrValDetails      // for leader getting promise requests
-	AcceptVal       *AcceptValDetails    // for follower getting accept requests
-	AcceptedServers *AcceptedServersInfo // for leader getting accepted requests
-	MajorityHandler *MajorityHandlerDetails
-	TxnQueue        []*common.TxnRequest
-	QueueMutex      sync.Mutex
-	Balance         float32
-	StartTime       time.Time
+	Port             string  `json:"port"`
+	ServerNumber     int32   `json:"server_number"`
+	ClientName       string  `json:"client_name"`
+	ServerTotal      int     `json:"server_total"`
+	DBCreds          DBCreds `json:"db_creds"`
+	DataStore        *sql.DB
+	LogStore         *logstore.LogStore
+	ServerAddresses  []string `json:"server_addresses"`
+	Pool             *serverPool.ServerPool
+	CurrBallot       *common.Ballot       // for each server maintaining their ballots
+	CurrVal          *CurrValDetails      // for leader getting promise requests
+	AcceptVal        *AcceptValDetails    // for follower getting accept requests
+	AcceptedServers  *AcceptedServersInfo // for leader getting accepted requests
+	MajorityHandler  *MajorityHandlerDetails
+	MajorityAchieved bool
+	TxnQueue         []*common.TxnRequest
+	QueueMutex       sync.Mutex
+	Balance          float32
+	StartTime        time.Time
+}
+
+func InitiateConfig(conf *Config) {
+	InitiateCurrVal(conf)
+	InitiateTxnQueue(conf)
+	InitiateLogStore(conf)
+	InitiateBalance(conf)
+	InitiateServerPool(conf)
+}
+
+func InitiateCurrVal(conf *Config) {
+	conf.CurrVal = &CurrValDetails{
+		CurrPromiseCount: 1,
+		ServerAddresses:  make([]string, 0),
+		MaxAcceptVal:     &common.Ballot{},
+		Transactions:     make([]*common.TxnRequest, 0),
+	}
+}
+
+func ResetCurrVal(conf *Config) {
+	conf.CurrVal.CurrPromiseCount = 1
+	conf.CurrVal.ServerAddresses = make([]string, 0)
+	conf.CurrVal.MaxAcceptVal = &common.Ballot{}
+	conf.CurrVal.Transactions = make([]*common.TxnRequest, 0)
+}
+
+func InitiateTxnQueue(conf *Config) {
+	conf.TxnQueue = make([]*common.TxnRequest, 0)
+}
+
+func InitiateLogStore(conf *Config) {
+	logStore := logstore.NewLogStore()
+	conf.LogStore = logStore
+}
+
+func InitiateBalance(conf *Config) {
+	balance, err := datastore.GetBalance(conf.DataStore, conf.ClientName)
+	if err != nil {
+		fmt.Printf("error trying to fetch balance from datastore, err: %v", err)
+		balance = 100
+	}
+	conf.Balance = balance
+}
+
+func InitiateServerPool(conf *Config) {
+	pool, err := serverPool.NewServerPool(conf.ServerAddresses)
+	if err != nil {
+		// todo: change this
+		fmt.Println(err)
+	}
+	conf.Pool = pool
 }
 
 type DBCreds struct {
@@ -53,16 +106,7 @@ type CurrValDetails struct {
 	CurrPromiseCount int
 	ServerAddresses  []string
 	MaxAcceptVal     *common.Ballot
-	BallotNumber     *common.Ballot
 	Transactions     []*common.TxnRequest
-}
-
-func NewCurrentVal() *CurrValDetails {
-	return &CurrValDetails{CurrPromiseCount: 1}
-}
-
-func ResetCurrVal(conf *Config) {
-	conf.CurrVal = nil
 }
 
 type AcceptValDetails struct {
@@ -85,8 +129,8 @@ type AcceptedServersInfo struct {
 	ServerAddresses   []string
 }
 
-func NewAcceptedServersInfo() *AcceptedServersInfo {
-	return &AcceptedServersInfo{
+func NewAcceptedServersInfo(conf *Config) {
+	conf.AcceptedServers = &AcceptedServersInfo{
 		CurrAcceptedCount: 1,
 		ServerAddresses:   make([]string, 0),
 	}

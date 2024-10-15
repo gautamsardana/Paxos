@@ -27,6 +27,7 @@ func SendCommit(ctx context.Context, conf *config.Config, req *common.Commit) {
 	DeleteFromLogs(conf, req.AcceptVal)
 	config.ResetCurrVal(conf)
 	config.ResetAcceptVal(conf)
+	config.NewAcceptedServersInfo(conf)
 	fmt.Printf("Server %d: new txns committed, updated log:%v\n", conf.ServerNumber, conf.LogStore)
 
 	fmt.Printf("Server %d: sending commit request with req: %v\n", conf.ServerNumber, req)
@@ -50,6 +51,10 @@ func ReceiveCommit(ctx context.Context, conf *config.Config, req *common.Commit)
 	//todo, also check if the same txns are committed in your db already
 	fmt.Printf("Server %d: received commit from leader with request: %v\n", conf.ServerNumber, req)
 
+	if req.BallotNum.TermNumber > conf.CurrBallot.TermNumber {
+		utils.UpdateBallot(conf, req.BallotNum.TermNumber, req.BallotNum.ServerNumber)
+	}
+
 	lastCommittedTerm, err := datastore.GetLatestTermNo(conf.DataStore)
 	if err != nil {
 		return err
@@ -57,10 +62,6 @@ func ReceiveCommit(ctx context.Context, conf *config.Config, req *common.Commit)
 	if req.LastCommittedTerm <= lastCommittedTerm {
 		fmt.Printf("Server %d: outdated commit request: %v\n", conf.ServerNumber, req)
 		return nil
-	}
-
-	if req.BallotNum.TermNumber > conf.CurrBallot.TermNumber {
-		utils.UpdateBallot(conf, req.BallotNum.TermNumber, req.BallotNum.ServerNumber)
 	}
 
 	err = CommitTransaction(ctx, conf, req)

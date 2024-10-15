@@ -16,7 +16,12 @@ func SendSyncResponse(ctx context.Context, conf *config.Config, req *common.Sync
 	if err != nil {
 		return err
 	}
-	lastCommittedTerm := latestTxns[len(latestTxns)-1].Term
+	lastCommittedTerm := int32(0)
+
+	if len(latestTxns) > 0 {
+		lastCommittedTerm = latestTxns[len(latestTxns)-1].Term
+	}
+
 	commitRequest := &common.Commit{
 		BallotNum:         conf.CurrBallot,
 		AcceptVal:         latestTxns,

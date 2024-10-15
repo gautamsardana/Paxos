@@ -21,6 +21,7 @@ func EnqueueTxn(ctx context.Context, req *common.TxnRequest, conf *config.Config
 
 func ProcessTxn(ctx context.Context, req *common.TxnRequest, conf *config.Config) error {
 	fmt.Printf("Server %d: received process txn request:%v\n", conf.ServerNumber, req)
+	conf.StartTime = time.Now()
 
 	txn, err := ValidateTxnInDB(conf, req)
 	if err != nil && err != sql.ErrNoRows {
@@ -37,7 +38,6 @@ func ProcessTxn(ctx context.Context, req *common.TxnRequest, conf *config.Config
 		return err
 	}
 
-	conf.StartTime = time.Now()
 	balance := conf.Balance
 
 	if balance >= req.Amount {
@@ -45,11 +45,11 @@ func ProcessTxn(ctx context.Context, req *common.TxnRequest, conf *config.Config
 		if err != nil {
 			return err
 		}
+		fmt.Printf("-------- %s\n", time.Since(conf.StartTime))
 	} else {
 		fmt.Println("this is where the magic happens!")
 		SendPrepare(context.Background(), conf)
 	}
-	fmt.Printf("-------- %s\n", time.Since(conf.StartTime))
 	return nil
 }
 

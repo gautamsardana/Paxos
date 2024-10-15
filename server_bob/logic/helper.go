@@ -33,10 +33,6 @@ func ValidateTxnInLogs(conf *config.Config, req *common.TxnRequest) *common.TxnR
 	return nil
 }
 
-func AddBallot(conf *config.Config, req *common.Promise) {
-	conf.CurrVal.BallotNumber = req.BallotNum
-}
-
 func AddLocalTxns(conf *config.Config) {
 	for _, txn := range conf.LogStore.Logs {
 		conf.CurrVal.Transactions = append(conf.CurrVal.Transactions, txn)

@@ -12,8 +12,9 @@ import (
 )
 
 func SendPrepare(ctx context.Context, conf *config.Config) {
-	conf.CurrBallot.TermNumber++
-	utils.UpdateBallot(conf, conf.CurrBallot.TermNumber, conf.CurrBallot.ServerNumber)
+	conf.MajorityAchieved = false
+	config.ResetCurrVal(conf)
+	utils.UpdateBallot(conf, conf.CurrBallot.TermNumber+1, conf.ServerNumber)
 
 	lastCommittedTerm, dbErr := datastore.GetLatestTermNo(conf.DataStore)
 	if dbErr != nil {
@@ -22,15 +23,15 @@ func SendPrepare(ctx context.Context, conf *config.Config) {
 
 	ballotDetails := &common.Ballot{
 		TermNumber:   conf.CurrBallot.TermNumber,
-		ServerNumber: conf.ServerNumber,
+		ServerNumber: conf.CurrBallot.ServerNumber,
 	}
 	prepareReq := &common.Prepare{BallotNum: ballotDetails, LastCommittedTerm: lastCommittedTerm}
 
-	conf.MajorityHandler = config.NewMajorityHandler(50000 * time.Millisecond)
 	fmt.Printf("Server %d: sending prepare with ballot:%v\n", conf.ServerNumber, conf.CurrBallot)
 	go WaitForMajorityPromises(ctx, conf)
 
 	for _, serverAddress := range conf.ServerAddresses {
+		fmt.Println("\n---------", serverAddress, "==========\n")
 		server, err := conf.Pool.GetServer(serverAddress)
 		if err != nil {
 			fmt.Println(err)
@@ -45,28 +46,41 @@ func SendPrepare(ctx context.Context, conf *config.Config) {
 
 func WaitForMajorityPromises(ctx context.Context, conf *config.Config) {
 	fmt.Printf("Server %d: waiting for promises...\n", conf.ServerNumber)
-	select {
-	case <-conf.MajorityHandler.MajorityCh:
-		fmt.Printf("Server %d: majority promises received\n", conf.ServerNumber)
-		//time.Sleep(10 * time.Millisecond)
-		AddLocalTxns(conf)
-		acceptRequest := &common.Accept{
-			BallotNum:       conf.CurrVal.BallotNumber,
-			AcceptVal:       conf.CurrVal.Transactions,
-			ServerAddresses: conf.CurrVal.ServerAddresses,
-		}
-		if len(acceptRequest.AcceptVal) == 0 {
-			fmt.Printf("Server %d: no transactions to send\n", conf.ServerNumber)
-			config.ResetCurrVal(conf)
+
+	// Set a timeout duration
+	timeout := time.After(500 * time.Millisecond)
+
+	// Collect promises until the timeout
+	for {
+		select {
+		case <-timeout:
+			fmt.Printf("Server %d: timeout reached, checking for majority...\n", conf.ServerNumber)
+
+			// Check if the majority has been achieved
+			if conf.CurrVal.CurrPromiseCount >= (conf.ServerTotal/2)+1 {
+				fmt.Printf("Server %d: majority promises received\n", conf.ServerNumber)
+				conf.MajorityAchieved = true
+				if conf.CurrVal.MaxAcceptVal.TermNumber == 0 {
+					AddLocalTxns(conf)
+				}
+
+				acceptRequest := &common.Accept{
+					BallotNum:       conf.CurrBallot,
+					AcceptVal:       conf.CurrVal.Transactions,
+					ServerAddresses: conf.CurrVal.ServerAddresses,
+				}
+				if len(acceptRequest.AcceptVal) == 0 {
+					fmt.Printf("Server %d: no transactions to send\n", conf.ServerNumber)
+					return
+				}
+				SendAccept(ctx, conf, acceptRequest)
+			} else {
+				fmt.Printf("Server %d: not enough promises received, canceling...\n", conf.ServerNumber)
+				config.ResetCurrVal(conf)
+			}
 			return
 		}
-		SendAccept(context.Background(), conf, acceptRequest)
-	case <-time.After(conf.MajorityHandler.Timeout):
-		fmt.Printf("Server %d: timed out waiting for promises\n", conf.ServerNumber)
-		config.ResetCurrVal(conf)
-		conf.MajorityHandler.TimeoutCh <- true
 	}
-	return
 }
 
 func ReceivePrepare(ctx context.Context, conf *config.Config, req *common.Prepare) error {
@@ -83,11 +97,7 @@ func ReceivePrepare(ctx context.Context, conf *config.Config, req *common.Prepar
 		return fmt.Errorf("not a valid ballot, return error exit")
 	}
 
-	if req.BallotNum.TermNumber != conf.CurrBallot.TermNumber {
-		utils.UpdateBallot(conf, req.BallotNum.TermNumber, req.BallotNum.ServerNumber)
-	}
-
-	fmt.Println(string(conf.ServerNumber)+": sending promise with request: %v", req)
+	utils.UpdateBallot(conf, req.BallotNum.TermNumber, req.BallotNum.ServerNumber)
 	SendPromise(ctx, conf, &common.Ballot{TermNumber: req.BallotNum.TermNumber, ServerNumber: req.BallotNum.ServerNumber})
 
 	return nil
@@ -95,6 +105,12 @@ func ReceivePrepare(ctx context.Context, conf *config.Config, req *common.Prepar
 
 func IsValidBallot(req *common.Prepare, conf *config.Config) bool {
 	if req.BallotNum.TermNumber < conf.CurrBallot.TermNumber {
+		err := SendSyncResponse(context.Background(), conf, &common.SyncRequest{
+			LastCommittedTerm: req.LastCommittedTerm,
+			ServerNo:          req.BallotNum.ServerNumber})
+		if err != nil {
+			return false
+		}
 		return false
 	}
 	return true
