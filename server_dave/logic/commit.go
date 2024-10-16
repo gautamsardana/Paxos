@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	common "GolandProjects/apaxos-gautamsardana/api_common"
@@ -10,6 +11,8 @@ import (
 	"GolandProjects/apaxos-gautamsardana/server_dave/storage/datastore"
 	"GolandProjects/apaxos-gautamsardana/server_dave/utils"
 )
+
+var ErrDuplicateTxns = errors.New("duplicate txns")
 
 // i am a leader - i got accepted requests from majority followers. Now I need to tell them to commit
 
@@ -84,8 +87,8 @@ func ReceiveCommit(ctx context.Context, conf *config.Config, req *common.Commit)
 			return dbErr
 		}
 		if txn != nil {
-			dbErr = fmt.Errorf("txn exists in db already")
-			return dbErr
+			fmt.Printf("Server %d: duplicate txns %v\n", conf.ServerNumber, req)
+			return ErrDuplicateTxns
 		}
 	}
 

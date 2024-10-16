@@ -39,7 +39,7 @@ func PrintBalance(ctx context.Context, conf *config.Config) (*common.GetBalanceR
 				ServerAddresses:   nil,
 				LastCommittedTerm: serverLastCommittedTerm,
 			})
-			if err != nil {
+			if err != nil && err != ErrDuplicateTxns {
 				return nil, err
 			}
 		}
