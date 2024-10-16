@@ -98,3 +98,26 @@ func GetTransactionsAfterTerm(db *sql.DB, term int32) ([]*common.TxnRequest, err
 	}
 	return transactions, nil
 }
+
+func GetAllTransactions(db *sql.DB) ([]*common.TxnRequest, error) {
+	var transactions []*common.TxnRequest
+
+	query := `SELECT msg_id, sender, receiver, amount, term FROM transaction ORDER BY created_at`
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var txn common.TxnRequest
+		if err = rows.Scan(&txn.MsgID, &txn.Sender, &txn.Receiver, &txn.Amount, &txn.Term); err != nil {
+			return nil, err
+		}
+		transactions = append(transactions, &txn)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return transactions, nil
+}

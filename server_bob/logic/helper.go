@@ -46,6 +46,8 @@ func AddNewTxnsToCurrVal(conf *config.Config, req *common.Promise) {
 	conf.CurrVal.Transactions = append(conf.CurrVal.Transactions, req.LocalVal...)
 }
 
+// todo - check if same txns have been added before. Unique msg id takes care of it, but dont return error maybe
+
 func CommitTransaction(ctx context.Context, conf *config.Config, req *common.Commit) (err error) {
 	tx, err := conf.DataStore.BeginTx(ctx, nil)
 	if err != nil {

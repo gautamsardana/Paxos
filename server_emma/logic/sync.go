@@ -1,13 +1,13 @@
 package logic
 
 import (
-	"GolandProjects/apaxos-gautamsardana/server_emma/utils"
 	"context"
 	"fmt"
 
 	common "GolandProjects/apaxos-gautamsardana/api_common"
 	"GolandProjects/apaxos-gautamsardana/server_emma/config"
 	"GolandProjects/apaxos-gautamsardana/server_emma/storage/datastore"
+	"GolandProjects/apaxos-gautamsardana/server_emma/utils"
 )
 
 // SendSyncResponse i am the updated server. I need to send latest txns to slow servers

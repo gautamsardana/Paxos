@@ -2,19 +2,6 @@
     protoc --go_out=. --go-grpc_out=. common.proto
 
 
-when proposer sends the prepared message, it waits for the promise from majority of nodes. Check how to
-implement this, proposer only needs to check the ballot number or the accepted val when majority nodes have sent
-the promise
-
-
-if leader is sending a prepare message, it might need to send the previous ballot number (last log that you
-committed) - it becomes easier for other to accept? Can use linked list here? Current node, and the next
-node (new stuff)
-
-This system will work both ways. Leader will update followers, and followers will also update leader.
-
----
-
 If you are a slow server and you want to send out a prepare, include the current ballot number + the
 ballot number of the last committed message in the prepare.
 If the last committed message is outdated, you have a new synchronize API to update your ballot number
@@ -25,9 +12,7 @@ that you dont have, you need to ask that server for new transactions. Send anoth
 wait for the response and then commit all those transactions. Can we make this synchronous? Should we?
 
 Future -
-Add created_at, updated_at time so that we know what the order of all txns is.
-
-transaction has already been committed or rolled back
+set lastCommittedTerm when you are committing a new block instead of evaluating it everytime
 
 
 CREATE TABLE `user` (

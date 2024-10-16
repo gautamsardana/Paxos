@@ -1,7 +1,6 @@
 package main
 
 import (
-	"GolandProjects/apaxos-gautamsardana/server_alice/logic"
 	"fmt"
 	"google.golang.org/grpc"
 	"log"
@@ -10,12 +9,11 @@ import (
 	common "GolandProjects/apaxos-gautamsardana/api_common"
 	"GolandProjects/apaxos-gautamsardana/server_alice/api"
 	"GolandProjects/apaxos-gautamsardana/server_alice/config"
+	"GolandProjects/apaxos-gautamsardana/server_alice/logic"
 	"GolandProjects/apaxos-gautamsardana/server_alice/utils"
 )
 
-// todo: have a flag somewhere so that the servers who are not live will not send back the promise
-
-// todo: when leader gets promises from majority -- the leader's accepted values will also be
+// todo: when leader gets accepted from majority -- the leader's accepted values will also be
 // updated because it is implied that the leader already sent the accept message to itself AND
 // received the accepted value from itself
 

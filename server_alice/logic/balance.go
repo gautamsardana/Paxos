@@ -1,14 +1,15 @@
 package logic
 
 import (
+	"context"
+	"fmt"
+
 	common "GolandProjects/apaxos-gautamsardana/api_common"
 	"GolandProjects/apaxos-gautamsardana/server_alice/config"
 	"GolandProjects/apaxos-gautamsardana/server_alice/storage/datastore"
-	"context"
-	"fmt"
 )
 
-func GetBalance(ctx context.Context, conf *config.Config) (*common.GetBalanceResponse, error) {
+func PrintBalance(ctx context.Context, conf *config.Config) (*common.GetBalanceResponse, error) {
 	fmt.Printf("Server %d: GetBalance request received\n", conf.ServerNumber)
 
 	finalBalance := float32(0)
@@ -16,7 +17,7 @@ func GetBalance(ctx context.Context, conf *config.Config) (*common.GetBalanceRes
 	if dbErr != nil {
 		return nil, dbErr
 	}
-	for _, serverAddr := range conf.ServerAddresses[:conf.ServerTotal/2] {
+	for _, serverAddr := range conf.ServerAddresses {
 		server, err := conf.Pool.GetServer(serverAddr)
 		if err != nil {
 			fmt.Println(err)

@@ -7,27 +7,35 @@ import (
 )
 
 func GetBalance(client common.PaxosClient, user string) {
-	fmt.Println("Printing balance for user...")
-	resp, err := client.GetBalance(context.Background(), &common.GetBalanceRequest{User: user})
+	resp, err := client.PrintBalance(context.Background(), &common.GetBalanceRequest{User: user})
 	if err != nil {
 		fmt.Println("Error:", err)
+		return
 	}
 	fmt.Printf("Balance of %s: %f\n", user, resp.Balance)
 }
 
-func printDB(client common.PaxosClient) {
-	fmt.Println("Printing database state...")
+func printDB(client common.PaxosClient, user string) {
+	resp, err := client.PrintDB(context.Background(), &common.PrintDBRequest{User: user})
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+	fmt.Printf("DB txns of user %s: %+v\n", user, resp.Txns)
 }
 
-func printLog(client common.PaxosClient) {
-	fmt.Println("Printing transaction log...")
+func printLogs(client common.PaxosClient, user string) {
+	resp, err := client.PrintLogs(context.Background(), &common.PrintLogsRequest{User: user})
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+	fmt.Printf("Logs of user %s: %+v\n", user, resp.Logs)
 }
 
 // Process transactions for a given set
 func processSet(s *common.TxnSet, client common.PaxosClient) {
-	fmt.Printf("Processing Set ", s)
-
-	_, err := client.ProcessTxn(context.Background(), s)
+	_, err := client.ProcessTxnSet(context.Background(), s)
 	if err != nil {
 		return
 	}

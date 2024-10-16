@@ -12,10 +12,11 @@ import (
 	"strings"
 )
 
-const inputFilePath = "input - Sheet1.csv"
+const inputFilePath = "lab1_Test.csv"
 
-var sets []*common.TxnSet
+var sets map[int32]*common.TxnSet // Use a map to store sets by their SetNo
 var activeServers map[string]bool // A map to keep track of which servers are live
+var totalSets int32
 
 // Function to load test cases from a CSV file
 func loadCSV(filename string) error {
@@ -28,46 +29,73 @@ func loadCSV(filename string) error {
 	reader := csv.NewReader(file)
 	reader.Comma = ','
 
-	// Skip the header
-	_, err = reader.Read()
-	if err != nil {
-		return err
-	}
+	// Initialize the map to store sets by their SetNo
+	sets = make(map[int32]*common.TxnSet)
+
+	var currentSetNo int32          // To store the current set number
+	var currentLiveServers []string // To store the current live servers
 
 	for {
-		// Read the set number row
+		// Read each row of the CSV file
 		setRow, err := reader.Read()
 		if err != nil {
 			break
 		}
-		setNumber, _ := strconv.Atoi(setRow[0])
 
-		// Read the transactions for the current set
-		var transactions []*common.TxnRequest
-		for _, txn := range strings.Split(setRow[1], "\n") {
-			txn = strings.Trim(txn, "()")
+		// Check if the set number is provided in this row
+		if setRow[0] != "" {
+			// Parse the set number
+			setNumber, _ := strconv.Atoi(setRow[0])
+			currentSetNo = int32(setNumber)
+			totalSets = currentSetNo
+
+			// Parse the live servers for the current set
+			currentLiveServers = strings.Split(strings.Trim(setRow[2], "[] "), ",")
+			for i := range currentLiveServers {
+				currentLiveServers[i] = strings.TrimSpace(currentLiveServers[i])
+			}
+
+			// Initialize the set if it doesn't exist
+			if _, exists := sets[currentSetNo]; !exists {
+				sets[currentSetNo] = &common.TxnSet{
+					SetNo:       currentSetNo,
+					Txns:        []*common.TxnRequest{},
+					LiveServers: currentLiveServers,
+				}
+			}
+		}
+
+		// Parse the transactions for the current set
+		txnStrings := strings.Split(setRow[1], ";") // Assuming each txn is separated by a semicolon
+		for _, txn := range txnStrings {
+			txn = strings.Trim(txn, "() ")
 			parts := strings.Split(txn, ",")
-			amount, _ := strconv.ParseFloat(parts[2], 32)
-			transactions = append(transactions, &common.TxnRequest{
-				Sender:   parts[0],
-				Receiver: parts[1],
+			if len(parts) != 3 {
+				continue
+			}
+			amount, _ := strconv.ParseFloat(strings.TrimSpace(parts[2]), 32)
+
+			// Check if the currentSetNo already exists in the map
+			if sets[currentSetNo] == nil {
+				sets[currentSetNo] = &common.TxnSet{
+					SetNo: currentSetNo,
+					Txns:  []*common.TxnRequest{}, // Initialize the Txns slice to avoid nil panics
+				}
+			}
+
+			// Append the transaction to the current set
+			sets[currentSetNo].Txns = append(sets[currentSetNo].Txns, &common.TxnRequest{
+				Sender:   strings.TrimSpace(parts[0]),
+				Receiver: strings.TrimSpace(parts[1]),
 				Amount:   float32(amount),
 			})
 		}
-		// Read the live servers for the current set
-		liveServers := strings.Split(strings.Trim(setRow[2], "[]"), ",")
-		// Store the set
-		sets = append(sets, &common.TxnSet{
-			SetNo:       int32(setNumber),
-			Txns:        transactions,
-			LiveServers: liveServers,
-		})
 	}
+
 	return nil
 }
 
 func main() {
-
 	client := InitiateClient()
 
 	err := loadCSV(inputFilePath)
@@ -78,29 +106,36 @@ func main() {
 
 	// Process sets one by one
 	scanner := bufio.NewScanner(os.Stdin)
-	for _, set := range sets {
-		fmt.Println("Press Enter to process the next set of transactions...")
+
+	var i int32
+	for i = 1; i <= totalSets; i++ {
+		fmt.Printf("Processing Set %d: Txns: %v LiveServers: %v\n", i, sets[i].Txns, sets[i].LiveServers)
+
 		scanner.Scan() // Wait for user input before processing the next set
 
-		processSet(set, client)
-
-		// Allow user to run functions while idle
+		processSet(sets[i], client)
+		// Allow user to run additional functions
 		for {
-			fmt.Println("Type 'next' to process the next set, 'printDB' to print database, 'printLog' to print log, balance to get balance:")
+			fmt.Println("Type 'next' to process the next set, 'db' to print database, 'log' to print log, or 'balance' to get balance:")
 			scanner.Scan()
 			input := scanner.Text()
 			if input == "next" {
 				break
-			} else if input == "printDB" {
-				printDB(client)
-			} else if input == "printLog" {
-				printLog(client)
+			} else if input == "db" {
+				fmt.Println("Which user?")
+				scanner.Scan()
+				user := scanner.Text()
+				printDB(client, user)
+			} else if input == "log" {
+				fmt.Println("Which user?")
+				scanner.Scan()
+				user := scanner.Text()
+				printLogs(client, user)
 			} else if input == "balance" {
 				fmt.Println("Which user?")
 				scanner.Scan()
 				user := scanner.Text()
 				GetBalance(client, user)
-
 			} else {
 				fmt.Println("Unknown command")
 			}

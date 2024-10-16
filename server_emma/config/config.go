@@ -38,6 +38,7 @@ type Config struct {
 	QueueMutex       sync.Mutex
 	Balance          float32
 	StartTime        time.Time
+	IsAlive          bool
 }
 
 func InitiateConfig(conf *Config) {

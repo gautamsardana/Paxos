@@ -20,7 +20,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Paxos_ProcessTxn_FullMethodName       = "/common.Paxos/ProcessTxn"
+	Paxos_ProcessTxnSet_FullMethodName    = "/common.Paxos/ProcessTxnSet"
 	Paxos_EnqueueTxn_FullMethodName       = "/common.Paxos/EnqueueTxn"
 	Paxos_Prepare_FullMethodName          = "/common.Paxos/Prepare"
 	Paxos_Promise_FullMethodName          = "/common.Paxos/Promise"
@@ -28,15 +28,18 @@ const (
 	Paxos_Accepted_FullMethodName         = "/common.Paxos/Accepted"
 	Paxos_Commit_FullMethodName           = "/common.Paxos/Commit"
 	Paxos_Sync_FullMethodName             = "/common.Paxos/Sync"
-	Paxos_GetBalance_FullMethodName       = "/common.Paxos/GetBalance"
+	Paxos_IsAlive_FullMethodName          = "/common.Paxos/IsAlive"
+	Paxos_PrintBalance_FullMethodName     = "/common.Paxos/PrintBalance"
 	Paxos_GetServerBalance_FullMethodName = "/common.Paxos/GetServerBalance"
+	Paxos_PrintLogs_FullMethodName        = "/common.Paxos/PrintLogs"
+	Paxos_PrintDB_FullMethodName          = "/common.Paxos/PrintDB"
 )
 
 // PaxosClient is the client API for Paxos service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PaxosClient interface {
-	ProcessTxn(ctx context.Context, in *TxnSet, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	ProcessTxnSet(ctx context.Context, in *TxnSet, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	EnqueueTxn(ctx context.Context, in *TxnRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	Prepare(ctx context.Context, in *Prepare, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	Promise(ctx context.Context, in *Promise, opts ...grpc.CallOption) (*emptypb.Empty, error)
@@ -44,8 +47,11 @@ type PaxosClient interface {
 	Accepted(ctx context.Context, in *Accepted, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	Commit(ctx context.Context, in *Commit, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	Sync(ctx context.Context, in *SyncRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	GetBalance(ctx context.Context, in *GetBalanceRequest, opts ...grpc.CallOption) (*GetBalanceResponse, error)
+	IsAlive(ctx context.Context, in *IsAliveRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	PrintBalance(ctx context.Context, in *GetBalanceRequest, opts ...grpc.CallOption) (*GetBalanceResponse, error)
 	GetServerBalance(ctx context.Context, in *GetServerBalanceRequest, opts ...grpc.CallOption) (*GetServerBalanceResponse, error)
+	PrintLogs(ctx context.Context, in *PrintLogsRequest, opts ...grpc.CallOption) (*PrintLogsResponse, error)
+	PrintDB(ctx context.Context, in *PrintDBRequest, opts ...grpc.CallOption) (*PrintDBResponse, error)
 }
 
 type paxosClient struct {
@@ -56,10 +62,10 @@ func NewPaxosClient(cc grpc.ClientConnInterface) PaxosClient {
 	return &paxosClient{cc}
 }
 
-func (c *paxosClient) ProcessTxn(ctx context.Context, in *TxnSet, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *paxosClient) ProcessTxnSet(ctx context.Context, in *TxnSet, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Paxos_ProcessTxn_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, Paxos_ProcessTxnSet_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -136,10 +142,20 @@ func (c *paxosClient) Sync(ctx context.Context, in *SyncRequest, opts ...grpc.Ca
 	return out, nil
 }
 
-func (c *paxosClient) GetBalance(ctx context.Context, in *GetBalanceRequest, opts ...grpc.CallOption) (*GetBalanceResponse, error) {
+func (c *paxosClient) IsAlive(ctx context.Context, in *IsAliveRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, Paxos_IsAlive_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *paxosClient) PrintBalance(ctx context.Context, in *GetBalanceRequest, opts ...grpc.CallOption) (*GetBalanceResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetBalanceResponse)
-	err := c.cc.Invoke(ctx, Paxos_GetBalance_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, Paxos_PrintBalance_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -156,11 +172,31 @@ func (c *paxosClient) GetServerBalance(ctx context.Context, in *GetServerBalance
 	return out, nil
 }
 
+func (c *paxosClient) PrintLogs(ctx context.Context, in *PrintLogsRequest, opts ...grpc.CallOption) (*PrintLogsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PrintLogsResponse)
+	err := c.cc.Invoke(ctx, Paxos_PrintLogs_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *paxosClient) PrintDB(ctx context.Context, in *PrintDBRequest, opts ...grpc.CallOption) (*PrintDBResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PrintDBResponse)
+	err := c.cc.Invoke(ctx, Paxos_PrintDB_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PaxosServer is the server API for Paxos service.
 // All implementations must embed UnimplementedPaxosServer
 // for forward compatibility.
 type PaxosServer interface {
-	ProcessTxn(context.Context, *TxnSet) (*emptypb.Empty, error)
+	ProcessTxnSet(context.Context, *TxnSet) (*emptypb.Empty, error)
 	EnqueueTxn(context.Context, *TxnRequest) (*emptypb.Empty, error)
 	Prepare(context.Context, *Prepare) (*emptypb.Empty, error)
 	Promise(context.Context, *Promise) (*emptypb.Empty, error)
@@ -168,8 +204,11 @@ type PaxosServer interface {
 	Accepted(context.Context, *Accepted) (*emptypb.Empty, error)
 	Commit(context.Context, *Commit) (*emptypb.Empty, error)
 	Sync(context.Context, *SyncRequest) (*emptypb.Empty, error)
-	GetBalance(context.Context, *GetBalanceRequest) (*GetBalanceResponse, error)
+	IsAlive(context.Context, *IsAliveRequest) (*emptypb.Empty, error)
+	PrintBalance(context.Context, *GetBalanceRequest) (*GetBalanceResponse, error)
 	GetServerBalance(context.Context, *GetServerBalanceRequest) (*GetServerBalanceResponse, error)
+	PrintLogs(context.Context, *PrintLogsRequest) (*PrintLogsResponse, error)
+	PrintDB(context.Context, *PrintDBRequest) (*PrintDBResponse, error)
 	mustEmbedUnimplementedPaxosServer()
 }
 
@@ -180,8 +219,8 @@ type PaxosServer interface {
 // pointer dereference when methods are called.
 type UnimplementedPaxosServer struct{}
 
-func (UnimplementedPaxosServer) ProcessTxn(context.Context, *TxnSet) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ProcessTxn not implemented")
+func (UnimplementedPaxosServer) ProcessTxnSet(context.Context, *TxnSet) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ProcessTxnSet not implemented")
 }
 func (UnimplementedPaxosServer) EnqueueTxn(context.Context, *TxnRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method EnqueueTxn not implemented")
@@ -204,11 +243,20 @@ func (UnimplementedPaxosServer) Commit(context.Context, *Commit) (*emptypb.Empty
 func (UnimplementedPaxosServer) Sync(context.Context, *SyncRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Sync not implemented")
 }
-func (UnimplementedPaxosServer) GetBalance(context.Context, *GetBalanceRequest) (*GetBalanceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetBalance not implemented")
+func (UnimplementedPaxosServer) IsAlive(context.Context, *IsAliveRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IsAlive not implemented")
+}
+func (UnimplementedPaxosServer) PrintBalance(context.Context, *GetBalanceRequest) (*GetBalanceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PrintBalance not implemented")
 }
 func (UnimplementedPaxosServer) GetServerBalance(context.Context, *GetServerBalanceRequest) (*GetServerBalanceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetServerBalance not implemented")
+}
+func (UnimplementedPaxosServer) PrintLogs(context.Context, *PrintLogsRequest) (*PrintLogsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PrintLogs not implemented")
+}
+func (UnimplementedPaxosServer) PrintDB(context.Context, *PrintDBRequest) (*PrintDBResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PrintDB not implemented")
 }
 func (UnimplementedPaxosServer) mustEmbedUnimplementedPaxosServer() {}
 func (UnimplementedPaxosServer) testEmbeddedByValue()               {}
@@ -231,20 +279,20 @@ func RegisterPaxosServer(s grpc.ServiceRegistrar, srv PaxosServer) {
 	s.RegisterService(&Paxos_ServiceDesc, srv)
 }
 
-func _Paxos_ProcessTxn_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Paxos_ProcessTxnSet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(TxnSet)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PaxosServer).ProcessTxn(ctx, in)
+		return srv.(PaxosServer).ProcessTxnSet(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Paxos_ProcessTxn_FullMethodName,
+		FullMethod: Paxos_ProcessTxnSet_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PaxosServer).ProcessTxn(ctx, req.(*TxnSet))
+		return srv.(PaxosServer).ProcessTxnSet(ctx, req.(*TxnSet))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -375,20 +423,38 @@ func _Paxos_Sync_Handler(srv interface{}, ctx context.Context, dec func(interfac
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Paxos_GetBalance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Paxos_IsAlive_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IsAliveRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PaxosServer).IsAlive(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Paxos_IsAlive_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PaxosServer).IsAlive(ctx, req.(*IsAliveRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Paxos_PrintBalance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetBalanceRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PaxosServer).GetBalance(ctx, in)
+		return srv.(PaxosServer).PrintBalance(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Paxos_GetBalance_FullMethodName,
+		FullMethod: Paxos_PrintBalance_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PaxosServer).GetBalance(ctx, req.(*GetBalanceRequest))
+		return srv.(PaxosServer).PrintBalance(ctx, req.(*GetBalanceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -411,6 +477,42 @@ func _Paxos_GetServerBalance_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Paxos_PrintLogs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PrintLogsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PaxosServer).PrintLogs(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Paxos_PrintLogs_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PaxosServer).PrintLogs(ctx, req.(*PrintLogsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Paxos_PrintDB_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PrintDBRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PaxosServer).PrintDB(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Paxos_PrintDB_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PaxosServer).PrintDB(ctx, req.(*PrintDBRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Paxos_ServiceDesc is the grpc.ServiceDesc for Paxos service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -419,8 +521,8 @@ var Paxos_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*PaxosServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "ProcessTxn",
-			Handler:    _Paxos_ProcessTxn_Handler,
+			MethodName: "ProcessTxnSet",
+			Handler:    _Paxos_ProcessTxnSet_Handler,
 		},
 		{
 			MethodName: "EnqueueTxn",
@@ -451,12 +553,24 @@ var Paxos_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Paxos_Sync_Handler,
 		},
 		{
-			MethodName: "GetBalance",
-			Handler:    _Paxos_GetBalance_Handler,
+			MethodName: "IsAlive",
+			Handler:    _Paxos_IsAlive_Handler,
+		},
+		{
+			MethodName: "PrintBalance",
+			Handler:    _Paxos_PrintBalance_Handler,
 		},
 		{
 			MethodName: "GetServerBalance",
 			Handler:    _Paxos_GetServerBalance_Handler,
+		},
+		{
+			MethodName: "PrintLogs",
+			Handler:    _Paxos_PrintLogs_Handler,
+		},
+		{
+			MethodName: "PrintDB",
+			Handler:    _Paxos_PrintDB_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

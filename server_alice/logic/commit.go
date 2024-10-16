@@ -1,12 +1,13 @@
 package logic
 
 import (
-	"GolandProjects/apaxos-gautamsardana/server_alice/storage/datastore"
 	"context"
+	"database/sql"
 	"fmt"
 
 	common "GolandProjects/apaxos-gautamsardana/api_common"
 	"GolandProjects/apaxos-gautamsardana/server_alice/config"
+	"GolandProjects/apaxos-gautamsardana/server_alice/storage/datastore"
 	"GolandProjects/apaxos-gautamsardana/server_alice/utils"
 )
 
@@ -15,6 +16,18 @@ import (
 func SendCommit(ctx context.Context, conf *config.Config, req *common.Commit) {
 	for _, txn := range req.AcceptVal {
 		txn.Term = req.BallotNum.TermNumber
+	}
+
+	if len(req.AcceptVal) > 0 {
+		msgID := req.AcceptVal[0].MsgID
+		txn, dbErr := datastore.GetTransactionByMsgID(conf.DataStore, msgID)
+		if dbErr != nil && dbErr != sql.ErrNoRows {
+			return
+		}
+		if txn != nil {
+			fmt.Printf("txn exists in db already")
+			return
+		}
 	}
 
 	dbErr := CommitTransaction(ctx, conf, req)
@@ -62,6 +75,18 @@ func ReceiveCommit(ctx context.Context, conf *config.Config, req *common.Commit)
 	if req.LastCommittedTerm <= lastCommittedTerm {
 		fmt.Printf("Server %d: outdated commit request: %v\n", conf.ServerNumber, req)
 		return nil
+	}
+
+	if len(req.AcceptVal) > 0 {
+		msgID := req.AcceptVal[0].MsgID
+		txn, dbErr := datastore.GetTransactionByMsgID(conf.DataStore, msgID)
+		if dbErr != nil && dbErr != sql.ErrNoRows {
+			return dbErr
+		}
+		if txn != nil {
+			dbErr = fmt.Errorf("txn exists in db already")
+			return dbErr
+		}
 	}
 
 	err = CommitTransaction(ctx, conf, req)

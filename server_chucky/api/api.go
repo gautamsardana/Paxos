@@ -1,12 +1,14 @@
 package api
 
 import (
+	"context"
+	"fmt"
+	"google.golang.org/protobuf/types/known/emptypb"
+	"log"
+
 	common "GolandProjects/apaxos-gautamsardana/api_common"
 	"GolandProjects/apaxos-gautamsardana/server_chucky/config"
 	"GolandProjects/apaxos-gautamsardana/server_chucky/logic"
-	"context"
-	"google.golang.org/protobuf/types/known/emptypb"
-	"log"
 )
 
 type Server struct {
@@ -73,8 +75,14 @@ func (s *Server) Sync(ctx context.Context, req *common.SyncRequest) (*emptypb.Em
 	return nil, nil
 }
 
-func (s *Server) GetBalance(ctx context.Context, _ *common.GetBalanceRequest) (*common.GetBalanceResponse, error) {
-	resp, err := logic.GetBalance(ctx, s.Config)
+func (s *Server) IsAlive(ctx context.Context, req *common.IsAliveRequest) (*emptypb.Empty, error) {
+	fmt.Printf("Server %d: IsAlive set to %t\n", s.Config.ServerNumber, req.IsAlive)
+	s.Config.IsAlive = req.IsAlive
+	return nil, nil
+}
+
+func (s *Server) PrintBalance(ctx context.Context, _ *common.GetBalanceRequest) (*common.GetBalanceResponse, error) {
+	resp, err := logic.PrintBalance(ctx, s.Config)
 	if err != nil {
 		log.Printf("Error fetching balance: %v", err)
 		return nil, err
@@ -84,6 +92,24 @@ func (s *Server) GetBalance(ctx context.Context, _ *common.GetBalanceRequest) (*
 
 func (s *Server) GetServerBalance(ctx context.Context, req *common.GetServerBalanceRequest) (*common.GetServerBalanceResponse, error) {
 	resp, err := logic.GetServerBalance(ctx, s.Config, req)
+	if err != nil {
+		log.Printf("Error fetching balance from other servers: %v", err)
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (s *Server) PrintLogs(ctx context.Context, req *common.PrintLogsRequest) (*common.PrintLogsResponse, error) {
+	fmt.Printf("Server %d: received PrintLogs request\n", s.Config.ServerNumber)
+
+	return &common.PrintLogsResponse{
+		Logs: s.Config.LogStore.Logs,
+	}, nil
+}
+
+func (s *Server) PrintDB(ctx context.Context, req *common.PrintDBRequest) (*common.PrintDBResponse, error) {
+	fmt.Printf("Server %d: received PrintLogs request\n", s.Config.ServerNumber)
+	resp, err := logic.PrintDB(ctx, s.Config, req)
 	if err != nil {
 		log.Printf("Error fetching balance from other servers: %v", err)
 		return nil, err

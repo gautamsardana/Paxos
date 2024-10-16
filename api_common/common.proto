@@ -7,7 +7,7 @@ package common;
 option go_package = "/";
 
 service Paxos {
-  rpc ProcessTxn(common.TxnSet) returns (google.protobuf.Empty);
+  rpc ProcessTxnSet(common.TxnSet) returns (google.protobuf.Empty);
   rpc EnqueueTxn(common.TxnRequest) returns (google.protobuf.Empty);
   rpc Prepare(common.Prepare) returns (google.protobuf.Empty);
   rpc Promise(common.Promise) returns (google.protobuf.Empty);
@@ -15,8 +15,11 @@ service Paxos {
   rpc Accepted(common.Accepted) returns (google.protobuf.Empty);
   rpc Commit(common.Commit) returns (google.protobuf.Empty);
   rpc Sync(common.SyncRequest) returns (google.protobuf.Empty);
-  rpc GetBalance(GetBalanceRequest) returns (GetBalanceResponse);
+  rpc IsAlive(common.IsAliveRequest) returns (google.protobuf.Empty);
+  rpc PrintBalance(GetBalanceRequest) returns (GetBalanceResponse);
   rpc GetServerBalance(common.GetServerBalanceRequest) returns (GetServerBalanceResponse);
+  rpc PrintLogs(PrintLogsRequest) returns (PrintLogsResponse);
+  rpc PrintDB(PrintDBRequest) returns (PrintDBResponse);
 }
 
 message TxnSet {
@@ -93,4 +96,24 @@ message GetServerBalanceResponse{
   Ballot ballotNum = 1;
   repeated TxnRequest NewTxns = 2;
   float balance = 3;
+}
+
+message IsAliveRequest{
+  bool isAlive = 1;
+}
+
+message PrintLogsRequest {
+  string user = 1;
+}
+
+message PrintLogsResponse {
+  map<string, TxnRequest> logs = 1;
+}
+
+message PrintDBRequest {
+  string user = 1;
+}
+
+message PrintDBResponse {
+  repeated TxnRequest Txns = 1;
 }

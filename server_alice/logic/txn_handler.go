@@ -47,6 +47,10 @@ func ProcessTxn(ctx context.Context, req *common.TxnRequest, conf *config.Config
 		}
 		fmt.Printf("-------- %s\n", time.Since(conf.StartTime))
 	} else {
+		if !conf.IsAlive {
+			err = fmt.Errorf("Server %d: server not alive %v\n", conf.ServerNumber)
+			return err
+		}
 		fmt.Println("this is where the magic happens!")
 		SendPrepare(context.Background(), conf)
 	}

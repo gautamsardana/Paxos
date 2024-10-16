@@ -1,12 +1,12 @@
 package logic
 
 import (
-	common "GolandProjects/apaxos-gautamsardana/api_common"
 	"context"
 	"database/sql"
 	"fmt"
 	"time"
 
+	common "GolandProjects/apaxos-gautamsardana/api_common"
 	"GolandProjects/apaxos-gautamsardana/server_chucky/config"
 )
 
@@ -25,6 +25,9 @@ func TransactionWorker(conf *config.Config) {
 }
 
 func QueueTransaction(conf *config.Config) {
+	if !conf.IsAlive {
+		return
+	}
 	conf.QueueMutex.Lock()
 	defer conf.QueueMutex.Unlock()
 

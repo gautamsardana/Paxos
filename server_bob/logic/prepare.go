@@ -85,6 +85,9 @@ func WaitForMajorityPromises(ctx context.Context, conf *config.Config) {
 
 func ReceivePrepare(ctx context.Context, conf *config.Config, req *common.Prepare) error {
 	fmt.Printf("Server %d: received prepare with request: %v\n", conf.ServerNumber, req)
+	if !conf.IsAlive {
+		return fmt.Errorf("Server %d: server not alive %v\n", conf.ServerNumber)
+	}
 
 	isValidPrepare, err := IsValidPrepare(context.Background(), req, conf)
 	if err != nil {
