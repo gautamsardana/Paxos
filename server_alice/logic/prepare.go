@@ -7,7 +7,6 @@ import (
 
 	common "GolandProjects/apaxos-gautamsardana/api_common"
 	"GolandProjects/apaxos-gautamsardana/server_alice/config"
-	"GolandProjects/apaxos-gautamsardana/server_alice/storage/datastore"
 	"GolandProjects/apaxos-gautamsardana/server_alice/utils"
 )
 
@@ -17,16 +16,11 @@ func SendPrepare(ctx context.Context, conf *config.Config) {
 	config.ResetAcceptVal(conf)
 	utils.UpdateBallot(conf, conf.CurrBallot.TermNumber+1, conf.ServerNumber)
 
-	lastCommittedTerm, dbErr := datastore.GetLatestTermNo(conf.DataStore)
-	if dbErr != nil {
-		return
-	}
-
 	ballotDetails := &common.Ballot{
 		TermNumber:   conf.CurrBallot.TermNumber,
 		ServerNumber: conf.CurrBallot.ServerNumber,
 	}
-	prepareReq := &common.Prepare{BallotNum: ballotDetails, LastCommittedTerm: lastCommittedTerm}
+	prepareReq := &common.Prepare{BallotNum: ballotDetails, LastCommittedTerm: conf.LastCommittedTerm}
 
 	fmt.Printf("Server %d: sending prepare with ballot:%v\n", conf.ServerNumber, conf.CurrBallot)
 	go WaitForMajorityPromises(ctx, conf)
@@ -121,13 +115,8 @@ func IsValidBallot(req *common.Prepare, conf *config.Config) bool {
 }
 
 func IsValidPrepare(ctx context.Context, req *common.Prepare, conf *config.Config) (bool, error) {
-	lastCommittedTerm, dbErr := datastore.GetLatestTermNo(conf.DataStore)
-	if dbErr != nil {
-		return false, dbErr
-	}
-
 	// leader is slow, send new txns
-	if req.LastCommittedTerm < lastCommittedTerm {
+	if req.LastCommittedTerm < conf.LastCommittedTerm {
 		err := SendSyncResponse(ctx, conf, &common.SyncRequest{
 			LastCommittedTerm: req.LastCommittedTerm,
 			ServerNo:          req.BallotNum.ServerNumber})
@@ -135,12 +124,12 @@ func IsValidPrepare(ctx context.Context, req *common.Prepare, conf *config.Confi
 			return false, err
 		}
 		return false, nil
-	} else if req.LastCommittedTerm > lastCommittedTerm { // receiver is slow, ask leader for new txns
+	} else if req.LastCommittedTerm > conf.LastCommittedTerm { // receiver is slow, ask leader for new txns
 		server, err := conf.Pool.GetServer(utils.MapServerNumberToAddress[req.BallotNum.ServerNumber])
 		if err != nil {
 			fmt.Println(err)
 		}
-		_, err = server.Sync(ctx, &common.SyncRequest{LastCommittedTerm: lastCommittedTerm, ServerNo: conf.ServerNumber})
+		_, err = server.Sync(ctx, &common.SyncRequest{LastCommittedTerm: conf.LastCommittedTerm, ServerNo: conf.ServerNumber})
 		if err != nil {
 			fmt.Println(err)
 			return false, err

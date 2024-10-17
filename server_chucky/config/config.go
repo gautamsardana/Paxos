@@ -19,26 +19,27 @@ import (
 const configPath = "/go/src/GolandProjects/apaxos-gautamsardana/server_chucky/config/config.json"
 
 type Config struct {
-	Port             string  `json:"port"`
-	ServerNumber     int32   `json:"server_number"`
-	ClientName       string  `json:"client_name"`
-	ServerTotal      int     `json:"server_total"`
-	DBCreds          DBCreds `json:"db_creds"`
-	DataStore        *sql.DB
-	LogStore         *logstore.LogStore
-	ServerAddresses  []string `json:"server_addresses"`
-	Pool             *serverPool.ServerPool
-	CurrBallot       *common.Ballot       // for each server maintaining their ballots
-	CurrVal          *CurrValDetails      // for leader getting promise requests
-	AcceptVal        *AcceptValDetails    // for follower getting accept requests
-	AcceptedServers  *AcceptedServersInfo // for leader getting accepted requests
-	MajorityHandler  *MajorityHandlerDetails
-	MajorityAchieved bool
-	TxnQueue         []*common.TxnRequest
-	QueueMutex       sync.Mutex
-	Balance          float32
-	StartTime        time.Time
-	IsAlive          bool
+	Port              string  `json:"port"`
+	ServerNumber      int32   `json:"server_number"`
+	ClientName        string  `json:"client_name"`
+	ServerTotal       int     `json:"server_total"`
+	DBCreds           DBCreds `json:"db_creds"`
+	DataStore         *sql.DB
+	LogStore          *logstore.LogStore
+	ServerAddresses   []string `json:"server_addresses"`
+	Pool              *serverPool.ServerPool
+	CurrBallot        *common.Ballot       // for each server maintaining their ballots
+	CurrVal           *CurrValDetails      // for leader getting promise requests
+	AcceptVal         *AcceptValDetails    // for follower getting accept requests
+	AcceptedServers   *AcceptedServersInfo // for leader getting accepted requests
+	MajorityHandler   *MajorityHandlerDetails
+	MajorityAchieved  bool
+	TxnQueue          []*common.TxnRequest
+	QueueMutex        sync.Mutex
+	Balance           float32
+	StartTime         time.Time
+	IsAlive           bool
+	LastCommittedTerm int32
 }
 
 func InitiateConfig(conf *Config) {

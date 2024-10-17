@@ -14,10 +14,7 @@ func PrintBalance(ctx context.Context, conf *config.Config) (*common.GetBalanceR
 	fmt.Printf("Server %d: GetBalance request received\n", conf.ServerNumber)
 
 	finalBalance := float32(0)
-	lastCommittedTerm, dbErr := datastore.GetLatestTermNo(conf.DataStore)
-	if dbErr != nil {
-		return nil, dbErr
-	}
+
 	for _, serverAddr := range conf.ServerAddresses {
 		server, err := conf.Pool.GetServer(serverAddr)
 		if err != nil {
@@ -25,7 +22,7 @@ func PrintBalance(ctx context.Context, conf *config.Config) (*common.GetBalanceR
 		}
 
 		resp, err := server.GetServerBalance(ctx, &common.GetServerBalanceRequest{
-			LastCommittedTerm: lastCommittedTerm,
+			LastCommittedTerm: conf.LastCommittedTerm,
 			User:              conf.ClientName,
 		})
 		if err != nil {
@@ -70,13 +67,10 @@ func GetServerBalance(ctx context.Context, conf *config.Config, req *common.GetS
 		BallotNum: conf.CurrBallot,
 	}
 
-	lastCommittedTerm, err := datastore.GetLatestTermNo(conf.DataStore)
-	if err != nil {
-		return nil, err
-	}
-
 	var latestCommittedTxns []*common.TxnRequest
-	if req.LastCommittedTerm < lastCommittedTerm {
+	var err error
+
+	if req.LastCommittedTerm < conf.LastCommittedTerm {
 		latestCommittedTxns, err = datastore.GetTransactionsAfterTerm(conf.DataStore, req.LastCommittedTerm)
 		if err != nil {
 			return nil, err

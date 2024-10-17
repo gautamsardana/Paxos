@@ -41,6 +41,7 @@ func SendCommit(ctx context.Context, conf *config.Config, req *common.Commit) {
 		return
 	}
 	// if commitReq lastCommittedTerm is same as mine, meaning i have already pushed these txns before in my db
+	conf.LastCommittedTerm = req.BallotNum.TermNumber
 	req.LastCommittedTerm = req.BallotNum.TermNumber
 
 	DeleteFromLogs(conf, req.AcceptVal)
@@ -74,11 +75,7 @@ func ReceiveCommit(ctx context.Context, conf *config.Config, req *common.Commit)
 		utils.UpdateBallot(conf, req.BallotNum.TermNumber, req.BallotNum.ServerNumber)
 	}
 
-	lastCommittedTerm, err := datastore.GetLatestTermNo(conf.DataStore)
-	if err != nil {
-		return err
-	}
-	if req.LastCommittedTerm <= lastCommittedTerm {
+	if req.LastCommittedTerm <= conf.LastCommittedTerm {
 		fmt.Printf("Server %d: outdated commit request: %v\n", conf.ServerNumber, req)
 		return nil
 	}
@@ -95,10 +92,17 @@ func ReceiveCommit(ctx context.Context, conf *config.Config, req *common.Commit)
 		}
 	}
 
-	err = CommitTransaction(ctx, conf, req)
+	err := CommitTransaction(ctx, conf, req)
 	if err != nil {
 		return err
 	}
+
+	//set the last committed term here after committing and retrieve this in future
+	lastCommittedTerm, dbErr := datastore.GetLatestTermNo(conf.DataStore)
+	if dbErr != nil {
+		return dbErr
+	}
+	conf.LastCommittedTerm = lastCommittedTerm
 
 	DeleteFromLogs(conf, req.AcceptVal)
 	config.ResetAcceptVal(conf)
