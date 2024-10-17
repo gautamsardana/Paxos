@@ -29,48 +29,48 @@ message TxnSet {
 }
 
 message TxnRequest {
-  string msgID = 1;
-  string sender = 2;
-  string receiver = 3;
-  float amount = 4;
-  int32 term = 5;
+  string MsgID = 1;
+  string Sender = 2;
+  string Receiver = 3;
+  float Amount = 4;
+  int32 Term = 5;
 }
 
 message Ballot {
-  int32 termNumber = 1;
-  int32 serverNumber = 2;
+  int32 TermNumber = 1;
+  int32 ServerNumber = 2;
 }
 
 message Prepare {
-  Ballot ballotNum = 1;
+  Ballot BallotNum = 1;
   int32 LastCommittedTerm = 2;
 }
 
 message Promise {
-  bool promiseAck = 1;
-  int32 serverNumber = 2;
-  Ballot ballotNum = 3;
-  Ballot acceptNum = 4;
-  repeated TxnRequest acceptVal = 5;
-  repeated TxnRequest localVal = 6;
+  bool PromiseAck = 1;
+  int32 ServerNumber = 2;
+  Ballot BallotNum = 3;
+  Ballot AcceptNum = 4;
+  repeated TxnRequest AcceptVal = 5;
+  repeated TxnRequest LocalVal = 6;
 }
 
 message Accept {
-  Ballot ballotNum = 1;
-  repeated TxnRequest acceptVal = 2;
-  repeated string serverAddresses = 3;
+  Ballot BallotNum = 1;
+  repeated TxnRequest AcceptVal = 2;
+  repeated string ServerAddresses = 3;
 }
 
 message Accepted {
-  Ballot ballotNum = 1;
-  repeated TxnRequest acceptVal = 2;
-  int32 serverNumber = 3;
+  Ballot BallotNum = 1;
+  repeated TxnRequest AcceptVal = 2;
+  int32 ServerNumber = 3;
 }
 
 message Commit {
-  Ballot ballotNum = 1;
-  repeated TxnRequest acceptVal = 2;
-  repeated string serverAddresses = 3;
+  Ballot BallotNum = 1;
+  repeated TxnRequest AcceptVal = 2;
+  repeated string ServerAddresses = 3;
   int32 LastCommittedTerm = 4;
 }
 
@@ -80,38 +80,38 @@ message SyncRequest {
 }
 
 message GetBalanceRequest{
-  string user = 1;
+  string User = 1;
 }
 
 message GetBalanceResponse {
-  float balance = 1;
+  float Balance = 1;
 }
 
 message GetServerBalanceRequest{
   int32 LastCommittedTerm = 1;
-  string user = 2;
+  string User = 2;
 }
 
 message GetServerBalanceResponse{
-  Ballot ballotNum = 1;
-  repeated TxnRequest NewTxns = 2;
-  float balance = 3;
+  Ballot BallotNum = 1;
+  repeated TxnRequest CommittedTxns = 2;
+  map<string, TxnRequest> LogTxns = 3;
 }
 
 message IsAliveRequest{
-  bool isAlive = 1;
+  bool IsAlive = 1;
 }
 
 message PrintLogsRequest {
-  string user = 1;
+  string User = 1;
 }
 
 message PrintLogsResponse {
-  map<string, TxnRequest> logs = 1;
+  map<string, TxnRequest> Logs = 1;
 }
 
 message PrintDBRequest {
-  string user = 1;
+  string User = 1;
 }
 
 message PrintDBResponse {

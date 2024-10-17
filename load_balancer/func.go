@@ -12,7 +12,7 @@ func GetBalance(client common.PaxosClient, user string) {
 		fmt.Println("Error:", err)
 		return
 	}
-	fmt.Printf("Balance of %s: %f\n", user, resp.Balance)
+	fmt.Printf("Balance of %s: %.2f\n", user, resp.Balance)
 }
 
 func printDB(client common.PaxosClient, user string) {
@@ -39,5 +39,4 @@ func processSet(s *common.TxnSet, client common.PaxosClient) {
 	if err != nil {
 		return
 	}
-
 }

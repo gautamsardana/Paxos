@@ -14,6 +14,7 @@ import (
 func SendPrepare(ctx context.Context, conf *config.Config) {
 	conf.MajorityAchieved = false
 	config.ResetCurrVal(conf)
+	config.ResetAcceptVal(conf)
 	utils.UpdateBallot(conf, conf.CurrBallot.TermNumber+1, conf.ServerNumber)
 
 	lastCommittedTerm, dbErr := datastore.GetLatestTermNo(conf.DataStore)
@@ -48,7 +49,7 @@ func WaitForMajorityPromises(ctx context.Context, conf *config.Config) {
 	fmt.Printf("Server %d: waiting for promises...\n", conf.ServerNumber)
 
 	// Set a timeout duration
-	timeout := time.After(500 * time.Millisecond)
+	timeout := time.After(400 * time.Millisecond)
 
 	// Collect promises until the timeout
 	for {

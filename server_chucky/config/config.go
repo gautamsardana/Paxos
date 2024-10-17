@@ -53,7 +53,7 @@ func InitiateCurrVal(conf *Config) {
 	conf.CurrVal = &CurrValDetails{
 		CurrPromiseCount: 1,
 		ServerAddresses:  make([]string, 0),
-		MaxAcceptVal:     &common.Ballot{},
+		MaxAcceptVal:     &common.Ballot{TermNumber: 0, ServerNumber: 0},
 		Transactions:     make([]*common.TxnRequest, 0),
 	}
 }
@@ -61,7 +61,7 @@ func InitiateCurrVal(conf *Config) {
 func ResetCurrVal(conf *Config) {
 	conf.CurrVal.CurrPromiseCount = 1
 	conf.CurrVal.ServerAddresses = make([]string, 0)
-	conf.CurrVal.MaxAcceptVal = &common.Ballot{}
+	conf.CurrVal.MaxAcceptVal = &common.Ballot{TermNumber: 0, ServerNumber: 0}
 	conf.CurrVal.Transactions = make([]*common.TxnRequest, 0)
 }
 

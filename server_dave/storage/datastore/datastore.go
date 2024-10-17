@@ -64,7 +64,7 @@ func InsertTransaction(tx *sql.Tx, transaction storage.Transaction) error {
 }
 
 func GetLatestTermNo(db *sql.DB) (int32, error) {
-	query := `SELECT term FROM transaction order by created_at desc limit 1`
+	query := `SELECT term FROM transaction order by term desc limit 1`
 	var term int32
 	err := db.QueryRow(query).Scan(&term)
 	if err != nil {

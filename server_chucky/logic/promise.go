@@ -71,11 +71,11 @@ func ReceivePromise(ctx context.Context, conf *config.Config, req *common.Promis
 	defer lock.Unlock()
 
 	//accept num and accept val are nil -- just add local txns of the follower
-	if req.AcceptNum == nil && req.AcceptVal == nil {
+	if req.AcceptNum == nil && req.AcceptVal == nil && conf.CurrVal.MaxAcceptVal.TermNumber == 0 {
 		AddNewTxnsToCurrVal(conf, req)
 	} else {
 		// accept num/val not empty -- update currVal of the leader to the acceptVal from follower
-		if conf.CurrVal.MaxAcceptVal == nil || req.AcceptNum.TermNumber > conf.CurrVal.MaxAcceptVal.TermNumber {
+		if req.AcceptNum.TermNumber > conf.CurrVal.MaxAcceptVal.TermNumber {
 			conf.CurrVal.MaxAcceptVal = req.AcceptNum
 			conf.CurrVal.Transactions = req.AcceptVal
 		}
