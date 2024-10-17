@@ -32,7 +32,7 @@ func PrintBalance(ctx context.Context, conf *config.Config) (*common.GetBalanceR
 			fmt.Println(err)
 		}
 
-		if len(resp.CommittedTxns) > 0 {
+		if resp.CommittedTxns != nil && len(resp.CommittedTxns) > 0 {
 			serverLastCommittedTerm := resp.CommittedTxns[len(resp.CommittedTxns)-1].Term
 			err = ReceiveCommit(ctx, conf, &common.Commit{
 				BallotNum:         resp.BallotNum,
@@ -44,7 +44,7 @@ func PrintBalance(ctx context.Context, conf *config.Config) (*common.GetBalanceR
 			}
 		}
 
-		if len(resp.LogTxns) > 0 {
+		if resp.LogTxns != nil && len(resp.LogTxns) > 0 {
 			for logTxnMsgID, logTxn := range resp.LogTxns {
 				if logTxn.Receiver != conf.ClientName {
 					continue

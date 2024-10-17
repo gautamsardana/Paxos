@@ -41,6 +41,14 @@ type Config struct {
 	IsAlive          bool
 }
 
+type PaxosRound struct {
+	CurrVal          *CurrValDetails
+	AcceptVal        *AcceptValDetails
+	AcceptedNum      int
+	PromiseNum       int
+	MajorityAchieved bool
+}
+
 func InitiateConfig(conf *Config) {
 	InitiateCurrVal(conf)
 	InitiateTxnQueue(conf)

@@ -14,6 +14,11 @@ import (
 // todo - only send this promise if the server is live based on the input
 
 func SendPromise(ctx context.Context, conf *config.Config, ballotNumber *common.Ballot) {
+	// if i already received a prepare with a higher term number
+	if ballotNumber.TermNumber < conf.CurrBallot.TermNumber {
+		return
+	}
+
 	promiseReq := &common.Promise{
 		PromiseAck:   true,
 		ServerNumber: conf.ServerNumber,
@@ -75,7 +80,7 @@ func ReceivePromise(ctx context.Context, conf *config.Config, req *common.Promis
 		AddNewTxnsToCurrVal(conf, req)
 	} else {
 		// accept num/val not empty -- update currVal of the leader to the acceptVal from follower
-		if req.AcceptNum.TermNumber > conf.CurrVal.MaxAcceptVal.TermNumber {
+		if req.AcceptNum != nil && req.AcceptNum.TermNumber > conf.CurrVal.MaxAcceptVal.TermNumber {
 			conf.CurrVal.MaxAcceptVal = req.AcceptNum
 			conf.CurrVal.Transactions = req.AcceptVal
 		}

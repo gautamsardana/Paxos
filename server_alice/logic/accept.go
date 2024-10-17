@@ -12,7 +12,11 @@ import (
 // i am the leader - i got majority promises, now i need to send them the accept message
 
 func SendAccept(ctx context.Context, conf *config.Config, req *common.Accept) {
+	if req.BallotNum.TermNumber < conf.CurrBallot.TermNumber {
+		return
+	}
 	fmt.Printf("Server %d: sending accept with request: %v\n", conf.ServerNumber, req)
+
 	conf.MajorityHandler = config.NewMajorityHandler(50000 * time.Millisecond)
 	go WaitForMajorityAccepted(ctx, conf)
 	for _, serverAddress := range req.ServerAddresses {

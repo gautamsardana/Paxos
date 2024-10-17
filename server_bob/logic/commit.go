@@ -17,6 +17,9 @@ var ErrDuplicateTxns = errors.New("duplicate txns")
 // i am a leader - i got accepted requests from majority followers. Now I need to tell them to commit
 
 func SendCommit(ctx context.Context, conf *config.Config, req *common.Commit) {
+	if req.BallotNum.TermNumber < conf.CurrBallot.TermNumber {
+		return
+	}
 	for _, txn := range req.AcceptVal {
 		txn.Term = req.BallotNum.TermNumber
 	}
