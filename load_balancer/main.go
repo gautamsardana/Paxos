@@ -111,10 +111,9 @@ func main() {
 	for i = 1; i <= totalSets; i++ {
 		fmt.Printf("Processing Set %d: Txns: %v LiveServers: %v\n", i, sets[i].Txns, sets[i].LiveServers)
 
-		scanner.Scan() // Wait for user input before processing the next set
-
+		scanner.Scan()
 		processSet(sets[i], client)
-		// Allow user to run additional functions
+
 		for {
 			fmt.Println("Type 'next' to process the next set, 'db' to print database, 'log' to print log, or 'balance' to get balance:")
 			scanner.Scan()
@@ -122,17 +121,17 @@ func main() {
 			if input == "next" {
 				break
 			} else if input == "db" {
-				fmt.Println("Which user?")
+				fmt.Println("Which user? (eg. 'S1' without quotes)")
 				scanner.Scan()
 				user := scanner.Text()
 				printDB(client, user)
 			} else if input == "log" {
-				fmt.Println("Which user?")
+				fmt.Println("Which user? (eg. 'S1' without quotes)")
 				scanner.Scan()
 				user := scanner.Text()
 				printLogs(client, user)
 			} else if input == "balance" {
-				fmt.Println("Which user?")
+				fmt.Println("Which user? (eg. 'S1' without quotes)")
 				scanner.Scan()
 				user := scanner.Text()
 				GetBalance(client, user)
@@ -141,7 +140,6 @@ func main() {
 			}
 		}
 	}
-
 	fmt.Println("All sets processed.")
 }
 

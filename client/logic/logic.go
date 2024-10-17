@@ -1,12 +1,14 @@
 package logic
 
 import (
-	common "GolandProjects/apaxos-gautamsardana/api_common"
-	"GolandProjects/apaxos-gautamsardana/client/config"
 	"context"
 	"fmt"
 	"github.com/google/uuid"
 	"log"
+	"time"
+
+	common "GolandProjects/apaxos-gautamsardana/api_common"
+	"GolandProjects/apaxos-gautamsardana/client/config"
 )
 
 var mapUserToServer = map[string]string{
@@ -60,6 +62,7 @@ func ProcessTxnSet(ctx context.Context, req *common.TxnSet, conf *config.Config)
 }
 
 func PrintBalance(ctx context.Context, req *common.GetBalanceRequest, conf *config.Config) (*common.GetBalanceResponse, error) {
+	start := time.Now()
 	serverAddr := mapUserToServer[req.User]
 	server, err := conf.Pool.GetServer(serverAddr)
 	if err != nil {
@@ -69,6 +72,7 @@ func PrintBalance(ctx context.Context, req *common.GetBalanceRequest, conf *conf
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println(time.Since(start))
 	return &common.GetBalanceResponse{
 		Balance: resp.Balance,
 	}, nil
