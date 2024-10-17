@@ -11,7 +11,7 @@ import (
 )
 
 func TransactionWorker(conf *config.Config) {
-	ticker := time.NewTicker(800 * time.Millisecond)
+	ticker := time.NewTicker(600 * time.Millisecond)
 
 	go func() {
 		for {

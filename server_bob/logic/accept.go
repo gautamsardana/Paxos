@@ -17,7 +17,7 @@ func SendAccept(ctx context.Context, conf *config.Config, req *common.Accept) {
 	}
 	fmt.Printf("Server %d: sending accept with request: %v\n", conf.ServerNumber, req)
 
-	conf.MajorityHandler = config.NewMajorityHandler(50000 * time.Millisecond)
+	conf.MajorityHandler = config.NewMajorityHandler(400 * time.Millisecond)
 	go WaitForMajorityAccepted(ctx, conf)
 	for _, serverAddress := range req.ServerAddresses {
 		server, err := conf.Pool.GetServer(serverAddress)

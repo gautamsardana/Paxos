@@ -41,6 +41,10 @@ func ReceiveAccepted(ctx context.Context, conf *config.Config, req *common.Accep
 		return fmt.Errorf("invalid ballot")
 	}
 
+	if conf.MajorityHandler == nil {
+		return fmt.Errorf("MajorityHandler is not initialized")
+	}
+
 	var lock sync.Mutex
 	lock.Lock()
 	defer lock.Unlock()
