@@ -50,3 +50,12 @@ func (c *Client) PrintDB(ctx context.Context, req *common.PrintDBRequest) (*comm
 	}
 	return resp, nil
 }
+
+func (c *Client) Performance(ctx context.Context, req *common.PerformanceRequest) (*common.PerformanceResponse, error) {
+	resp, err := logic.Performance(ctx, req, c.Config)
+	if err != nil {
+		log.Printf("Error evaluating performance: %v", err)
+		return nil, err
+	}
+	return resp, nil
+}

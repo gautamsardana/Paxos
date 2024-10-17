@@ -40,6 +40,8 @@ type Config struct {
 	StartTime         time.Time
 	IsAlive           bool
 	LastCommittedTerm int32
+	TxnCount          int
+	LatencyQueue      []time.Duration
 }
 
 func InitiateConfig(conf *Config) {

@@ -115,7 +115,11 @@ func main() {
 		processSet(sets[i], client)
 
 		for {
-			fmt.Println("Type 'next' to process the next set, 'db' to print database, 'log' to print log, or 'balance' to get balance:")
+			fmt.Println("Type 'next' to process the next set, " +
+				"'balance' to get balance, " +
+				"'db' to print database, " +
+				"'log' to print log," +
+				" or 'perf' to print performance")
 			scanner.Scan()
 			input := scanner.Text()
 			if input == "next" {
@@ -134,7 +138,12 @@ func main() {
 				fmt.Println("Which user? (eg. 'S1' without quotes)")
 				scanner.Scan()
 				user := scanner.Text()
-				GetBalance(client, user)
+				printBalance(client, user)
+			} else if input == "perf" {
+				fmt.Println("Which user? (eg. 'S1' without quotes)")
+				scanner.Scan()
+				user := scanner.Text()
+				performance(client, user)
 			} else {
 				fmt.Println("Unknown command")
 			}

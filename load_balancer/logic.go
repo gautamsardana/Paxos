@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-func GetBalance(client common.PaxosClient, user string) {
+func printBalance(client common.PaxosClient, user string) {
 	resp, err := client.PrintBalance(context.Background(), &common.GetBalanceRequest{User: user})
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -33,7 +33,18 @@ func printLogs(client common.PaxosClient, user string) {
 	fmt.Printf("Logs of user %s: %+v\n", user, resp.Logs)
 }
 
-// Process transactions for a given set
+func performance(client common.PaxosClient, user string) {
+	resp, err := client.Performance(context.Background(), &common.PerformanceRequest{User: user})
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+	latency := resp.Latency.AsDuration()
+
+	fmt.Printf("Average Latency: %s\n", latency)
+	fmt.Printf("Throughput: %.2f transactions/sec\n", resp.Throughput)
+}
+
 func processSet(s *common.TxnSet, client common.PaxosClient) {
 	_, err := client.ProcessTxnSet(context.Background(), s)
 	if err != nil {

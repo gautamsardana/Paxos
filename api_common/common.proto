@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "google/protobuf/empty.proto";
+import "google/protobuf/duration.proto";
 
 package common;
 
@@ -20,6 +21,7 @@ service Paxos {
   rpc GetServerBalance(common.GetServerBalanceRequest) returns (GetServerBalanceResponse);
   rpc PrintLogs(PrintLogsRequest) returns (PrintLogsResponse);
   rpc PrintDB(PrintDBRequest) returns (PrintDBResponse);
+  rpc Performance(PerformanceRequest) returns (PerformanceResponse);
 }
 
 message TxnSet {
@@ -116,4 +118,13 @@ message PrintDBRequest {
 
 message PrintDBResponse {
   repeated TxnRequest Txns = 1;
+}
+
+message PerformanceRequest{
+  string User = 1;
+}
+
+message PerformanceResponse{
+  google.protobuf.Duration Latency = 1;
+  float Throughput = 2;
 }

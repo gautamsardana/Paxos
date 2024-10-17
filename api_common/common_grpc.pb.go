@@ -33,6 +33,7 @@ const (
 	Paxos_GetServerBalance_FullMethodName = "/common.Paxos/GetServerBalance"
 	Paxos_PrintLogs_FullMethodName        = "/common.Paxos/PrintLogs"
 	Paxos_PrintDB_FullMethodName          = "/common.Paxos/PrintDB"
+	Paxos_Performance_FullMethodName      = "/common.Paxos/Performance"
 )
 
 // PaxosClient is the client API for Paxos service.
@@ -52,6 +53,7 @@ type PaxosClient interface {
 	GetServerBalance(ctx context.Context, in *GetServerBalanceRequest, opts ...grpc.CallOption) (*GetServerBalanceResponse, error)
 	PrintLogs(ctx context.Context, in *PrintLogsRequest, opts ...grpc.CallOption) (*PrintLogsResponse, error)
 	PrintDB(ctx context.Context, in *PrintDBRequest, opts ...grpc.CallOption) (*PrintDBResponse, error)
+	Performance(ctx context.Context, in *PerformanceRequest, opts ...grpc.CallOption) (*PerformanceResponse, error)
 }
 
 type paxosClient struct {
@@ -192,6 +194,16 @@ func (c *paxosClient) PrintDB(ctx context.Context, in *PrintDBRequest, opts ...g
 	return out, nil
 }
 
+func (c *paxosClient) Performance(ctx context.Context, in *PerformanceRequest, opts ...grpc.CallOption) (*PerformanceResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PerformanceResponse)
+	err := c.cc.Invoke(ctx, Paxos_Performance_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PaxosServer is the server API for Paxos service.
 // All implementations must embed UnimplementedPaxosServer
 // for forward compatibility.
@@ -209,6 +221,7 @@ type PaxosServer interface {
 	GetServerBalance(context.Context, *GetServerBalanceRequest) (*GetServerBalanceResponse, error)
 	PrintLogs(context.Context, *PrintLogsRequest) (*PrintLogsResponse, error)
 	PrintDB(context.Context, *PrintDBRequest) (*PrintDBResponse, error)
+	Performance(context.Context, *PerformanceRequest) (*PerformanceResponse, error)
 	mustEmbedUnimplementedPaxosServer()
 }
 
@@ -257,6 +270,9 @@ func (UnimplementedPaxosServer) PrintLogs(context.Context, *PrintLogsRequest) (*
 }
 func (UnimplementedPaxosServer) PrintDB(context.Context, *PrintDBRequest) (*PrintDBResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PrintDB not implemented")
+}
+func (UnimplementedPaxosServer) Performance(context.Context, *PerformanceRequest) (*PerformanceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Performance not implemented")
 }
 func (UnimplementedPaxosServer) mustEmbedUnimplementedPaxosServer() {}
 func (UnimplementedPaxosServer) testEmbeddedByValue()               {}
@@ -513,6 +529,24 @@ func _Paxos_PrintDB_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Paxos_Performance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PerformanceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PaxosServer).Performance(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Paxos_Performance_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PaxosServer).Performance(ctx, req.(*PerformanceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Paxos_ServiceDesc is the grpc.ServiceDesc for Paxos service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -571,6 +605,10 @@ var Paxos_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "PrintDB",
 			Handler:    _Paxos_PrintDB_Handler,
+		},
+		{
+			MethodName: "Performance",
+			Handler:    _Paxos_Performance_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

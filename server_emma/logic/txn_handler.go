@@ -16,6 +16,7 @@ func EnqueueTxn(ctx context.Context, req *common.TxnRequest, conf *config.Config
 	defer conf.QueueMutex.Unlock()
 
 	conf.TxnQueue = append(conf.TxnQueue, req)
+	conf.TxnCount++
 	return nil
 }
 
@@ -45,10 +46,10 @@ func ProcessTxn(ctx context.Context, req *common.TxnRequest, conf *config.Config
 		if err != nil {
 			return err
 		}
-		fmt.Printf("-------- %s\n", time.Since(conf.StartTime))
+		conf.LatencyQueue = append(conf.LatencyQueue, time.Since(conf.StartTime))
 	} else {
 		if !conf.IsAlive {
-			err = fmt.Errorf("Server %d: server not alive %v\n", conf.ServerNumber)
+			err = fmt.Errorf("Server %d: server not alive\n", conf.ServerNumber)
 			return err
 		}
 		fmt.Println("this is where the magic happens!")

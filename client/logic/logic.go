@@ -103,3 +103,16 @@ func PrintDB(ctx context.Context, req *common.PrintDBRequest, conf *config.Confi
 	}
 	return resp, nil
 }
+
+func Performance(ctx context.Context, req *common.PerformanceRequest, conf *config.Config) (*common.PerformanceResponse, error) {
+	serverAddr := mapUserToServer[req.User]
+	server, err := conf.Pool.GetServer(serverAddr)
+	if err != nil {
+		fmt.Println(err)
+	}
+	resp, err := server.Performance(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}

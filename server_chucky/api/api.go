@@ -116,3 +116,9 @@ func (s *Server) PrintDB(ctx context.Context, req *common.PrintDBRequest) (*comm
 	}
 	return resp, nil
 }
+
+func (s *Server) Performance(ctx context.Context, req *common.PerformanceRequest) (*common.PerformanceResponse, error) {
+	fmt.Printf("Server %d: received PrintLogs request\n", s.Config.ServerNumber)
+	resp := logic.Performance(ctx, s.Config, req)
+	return resp, nil
+}
