@@ -14,11 +14,10 @@ import (
 
 const inputFilePath = "lab1_Test.csv"
 
-var sets map[int32]*common.TxnSet // Use a map to store sets by their SetNo
-var activeServers map[string]bool // A map to keep track of which servers are live
+var sets map[int32]*common.TxnSet
+var activeServers map[string]bool
 var totalSets int32
 
-// Function to load test cases from a CSV file
 func loadCSV(filename string) error {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -29,33 +28,27 @@ func loadCSV(filename string) error {
 	reader := csv.NewReader(file)
 	reader.Comma = ','
 
-	// Initialize the map to store sets by their SetNo
 	sets = make(map[int32]*common.TxnSet)
 
-	var currentSetNo int32          // To store the current set number
-	var currentLiveServers []string // To store the current live servers
+	var currentSetNo int32
+	var currentLiveServers []string
 
 	for {
-		// Read each row of the CSV file
 		setRow, err := reader.Read()
 		if err != nil {
 			break
 		}
 
-		// Check if the set number is provided in this row
 		if setRow[0] != "" {
-			// Parse the set number
 			setNumber, _ := strconv.Atoi(setRow[0])
 			currentSetNo = int32(setNumber)
 			totalSets = currentSetNo
 
-			// Parse the live servers for the current set
 			currentLiveServers = strings.Split(strings.Trim(setRow[2], "[] "), ",")
 			for i := range currentLiveServers {
 				currentLiveServers[i] = strings.TrimSpace(currentLiveServers[i])
 			}
 
-			// Initialize the set if it doesn't exist
 			if _, exists := sets[currentSetNo]; !exists {
 				sets[currentSetNo] = &common.TxnSet{
 					SetNo:       currentSetNo,
@@ -65,8 +58,7 @@ func loadCSV(filename string) error {
 			}
 		}
 
-		// Parse the transactions for the current set
-		txnStrings := strings.Split(setRow[1], ";") // Assuming each txn is separated by a semicolon
+		txnStrings := strings.Split(setRow[1], ";")
 		for _, txn := range txnStrings {
 			txn = strings.Trim(txn, "() ")
 			parts := strings.Split(txn, ",")
@@ -75,15 +67,13 @@ func loadCSV(filename string) error {
 			}
 			amount, _ := strconv.ParseFloat(strings.TrimSpace(parts[2]), 32)
 
-			// Check if the currentSetNo already exists in the map
 			if sets[currentSetNo] == nil {
 				sets[currentSetNo] = &common.TxnSet{
 					SetNo: currentSetNo,
-					Txns:  []*common.TxnRequest{}, // Initialize the Txns slice to avoid nil panics
+					Txns:  []*common.TxnRequest{},
 				}
 			}
 
-			// Append the transaction to the current set
 			sets[currentSetNo].Txns = append(sets[currentSetNo].Txns, &common.TxnRequest{
 				Sender:   strings.TrimSpace(parts[0]),
 				Receiver: strings.TrimSpace(parts[1]),
@@ -104,7 +94,6 @@ func main() {
 		return
 	}
 
-	// Process sets one by one
 	scanner := bufio.NewScanner(os.Stdin)
 
 	var i int32

@@ -1,11 +1,12 @@
 package config
 
 import (
-	serverPool "GolandProjects/apaxos-gautamsardana/server_pool"
 	"encoding/json"
 	"fmt"
 	"log"
 	"os"
+
+	serverPool "GolandProjects/apaxos-gautamsardana/server_pool"
 )
 
 const configPath = "/go/src/GolandProjects/apaxos-gautamsardana/client/config/config.json"

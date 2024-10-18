@@ -1,12 +1,13 @@
 package logic
 
 import (
-	common "GolandProjects/apaxos-gautamsardana/api_common"
-	"GolandProjects/apaxos-gautamsardana/server_chucky/config"
 	"context"
 	"database/sql"
 	"fmt"
 	"time"
+
+	common "GolandProjects/apaxos-gautamsardana/api_common"
+	"GolandProjects/apaxos-gautamsardana/server_chucky/config"
 )
 
 func EnqueueTxn(ctx context.Context, req *common.TxnRequest, conf *config.Config) error {

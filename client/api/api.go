@@ -1,13 +1,13 @@
 package api
 
 import (
-	"GolandProjects/apaxos-gautamsardana/client/config"
-	"GolandProjects/apaxos-gautamsardana/client/logic"
 	"context"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"log"
 
 	common "GolandProjects/apaxos-gautamsardana/api_common"
+	"GolandProjects/apaxos-gautamsardana/client/config"
+	"GolandProjects/apaxos-gautamsardana/client/logic"
 )
 
 type Client struct {

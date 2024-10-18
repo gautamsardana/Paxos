@@ -1,9 +1,10 @@
 package main
 
 import (
-	common "GolandProjects/apaxos-gautamsardana/api_common"
 	"context"
 	"fmt"
+
+	common "GolandProjects/apaxos-gautamsardana/api_common"
 )
 
 func printBalance(client common.PaxosClient, user string) {
