@@ -41,7 +41,7 @@ func performance(client common.PaxosClient, user string) {
 	}
 	latency := resp.Latency.AsDuration()
 
-	fmt.Printf("Average Latency: %s\n", latency)
+	fmt.Printf("Total Latency till now: %s\n", latency)
 	fmt.Printf("Throughput: %.2f transactions/sec\n", resp.Throughput)
 }
 

@@ -1,35 +1,6 @@
 1. Run proto file -
     protoc --go_out=. --go-grpc_out=. common.proto
 
-
-If you are a slow server and you want to send out a prepare, include the current ballot number + the
-ballot number of the last committed message in the prepare.
-If the last committed message is outdated, you have a new synchronize API to update your ballot number
-and commit new txns which other servers have already committed. Once this is done, try the prepare again.
-
-If you are a slow user, and someone else sends you a prepare that you realise has last committed as something
-that you dont have, you need to ask that server for new transactions. Send another sync request,
-wait for the response and then commit all those transactions. Can we make this synchronous? Should we?
-
 Future -
-set lastCommittedTerm when you are committing a new block instead of evaluating it everytime
-
-
-CREATE TABLE `user` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `user` varchar(256) DEFAULT NULL,
-  `balance` double(10,2) DEFAULT '100.00',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-CREATE TABLE `transaction` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `msg_id` varchar(255) NOT NULL,
-  `sender` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `receiver` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `amount` double(10,2) DEFAULT NULL,
-  `term` int DEFAULT NULL,
-  `created_at` timestamp NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_msgid` (`msg_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=73 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+check how to handle the increasing ballot number. Avoid int32 overflow
+More aggressive approaches to tackle livelocks - not just different ticker times
