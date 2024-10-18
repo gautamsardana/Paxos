@@ -1,13 +1,12 @@
 package logic
 
 import (
+	common "GolandProjects/apaxos-gautamsardana/api_common"
+	"GolandProjects/apaxos-gautamsardana/server_dave/config"
 	"context"
 	"database/sql"
 	"fmt"
 	"time"
-
-	common "GolandProjects/apaxos-gautamsardana/api_common"
-	"GolandProjects/apaxos-gautamsardana/server_dave/config"
 )
 
 func EnqueueTxn(ctx context.Context, req *common.TxnRequest, conf *config.Config) error {
@@ -22,7 +21,7 @@ func EnqueueTxn(ctx context.Context, req *common.TxnRequest, conf *config.Config
 
 func ProcessTxn(ctx context.Context, req *common.TxnRequest, conf *config.Config) error {
 	fmt.Printf("Server %d: received process txn request:%v\n", conf.ServerNumber, req)
-	conf.StartTime = time.Now()
+	conf.TxnStartTime = time.Now()
 
 	txn, err := ValidateTxnInDB(conf, req)
 	if err != nil && err != sql.ErrNoRows {
@@ -46,7 +45,7 @@ func ProcessTxn(ctx context.Context, req *common.TxnRequest, conf *config.Config
 		if err != nil {
 			return err
 		}
-		conf.LatencyQueue = append(conf.LatencyQueue, time.Since(conf.StartTime))
+		conf.LatencyQueue = append(conf.LatencyQueue, time.Since(conf.TxnStartTime))
 	} else {
 		if !conf.IsAlive {
 			err = fmt.Errorf("Server %d: server not alive\n", conf.ServerNumber)

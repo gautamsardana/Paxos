@@ -10,25 +10,19 @@ import (
 )
 
 func Performance(ctx context.Context, conf *config.Config, req *common.PerformanceRequest) *common.PerformanceResponse {
-	var totalTime time.Duration
+	var totalLatency time.Duration
 	completedTxns := len(conf.LatencyQueue)
-
 	for i := 0; i < completedTxns; i++ {
-		totalTime += conf.LatencyQueue[i]
-	}
-
-	var avgLatency time.Duration
-	if conf.TxnCount > 0 {
-		avgLatency = totalTime / time.Duration(completedTxns)
+		totalLatency += conf.LatencyQueue[i]
 	}
 
 	var throughput float64
-	if totalTime > 0 {
-		throughput = float64(completedTxns) / totalTime.Seconds()
+	if totalLatency > 0 {
+		throughput = float64(completedTxns) / totalLatency.Seconds()
 	}
 
 	resp := &common.PerformanceResponse{
-		Latency:    durationpb.New(avgLatency),
+		Latency:    durationpb.New(totalLatency),
 		Throughput: float32(throughput),
 	}
 	return resp

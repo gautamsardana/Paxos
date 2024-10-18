@@ -37,7 +37,8 @@ type Config struct {
 	TxnQueue          []*common.TxnRequest
 	QueueMutex        sync.Mutex
 	Balance           float32
-	StartTime         time.Time
+	TxnStartTime      time.Time
+	PaxosStartTime    time.Time
 	IsAlive           bool
 	LastCommittedTerm int32
 	TxnCount          int

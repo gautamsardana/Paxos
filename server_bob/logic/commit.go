@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
 	common "GolandProjects/apaxos-gautamsardana/api_common"
 	"GolandProjects/apaxos-gautamsardana/server_bob/config"
@@ -62,6 +63,7 @@ func SendCommit(ctx context.Context, conf *config.Config, req *common.Commit) {
 			fmt.Println(err)
 		}
 	}
+	conf.LatencyQueue = append(conf.LatencyQueue, time.Since(conf.PaxosStartTime))
 }
 
 //i am a follower - i received this commit message from the leader. I need to commit these messages
